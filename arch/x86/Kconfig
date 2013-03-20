@@ -147,6 +147,9 @@ config HAVE_LATENCYTOP_SUPPORT
 config MMU
 	def_bool y
 
+config COLINUX_KERNEL
+    def_bool n
+
 config SBUS
 	bool
 

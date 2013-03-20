@@ -72,6 +72,7 @@ startup_64:
 	leaq	_text(%rip), %rbp
 	subq	$_text - __START_KERNEL_map, %rbp
 
+#ifndef CONFIG_COLINUX_KERNEL
 	/* Is the address not 2M aligned? */
 	movq	%rbp, %rax
 	andl	$~PMD_PAGE_MASK, %eax
@@ -154,6 +155,7 @@ startup_64:
 
 	/* Fixup phys_base */
 	addq	%rbp, phys_base(%rip)
+#endif
 
 	movq	$(early_level4_pgt - __START_KERNEL_map), %rax
 	jmp 1f
@@ -172,6 +174,7 @@ ENTRY(secondary_startup_64)
 	 * after the boot processor executes this code.
 	 */
 
+#ifndef CONFIG_COLINUX_KERNEL
 	movq	$(init_level4_pgt - __START_KERNEL_map), %rax
 1:
 
@@ -182,7 +185,8 @@ ENTRY(secondary_startup_64)
 	/* Setup early boot stage 4 level pagetables. */
 	addq	phys_base(%rip), %rax
 	movq	%rax, %cr3
-
+#endif
+		
 	/* Ensure I am executing from virtual addresses */
 	movq	$1f, %rax
 	jmp	*%rax
@@ -366,6 +370,11 @@ ENTRY(early_idt_handler)
 
 10:
 	leaq 88(%rsp),%rdi	# Pointer to %rip
+	mov  (%rdi),%rax    # get rip
+	leaq 112(%rsp),%rdx # prev rsp
+	push %rdx           # set up stack frame
+	push %rax
+    
 	call early_fixup_exception
 	andl %eax,%eax
 	jnz 20f			# Found an exception entry
@@ -373,10 +382,10 @@ ENTRY(early_idt_handler)
 11:
 #ifdef CONFIG_EARLY_PRINTK
 	GET_CR2_INTO(%r9)	# can clobber any volatile register if pv
-	movl 80(%rsp),%r8d	# error code
-	movl 72(%rsp),%esi	# vector number
-	movl 96(%rsp),%edx	# %cs
-	movq 88(%rsp),%rcx	# %rip
+	movl 96(%rsp),%r8d	# error code
+	movl 88(%rsp),%esi	# vector number
+	movl 112(%rsp),%edx	# %cs
+	movq 104(%rsp),%rcx	# %rip
 	xorl %eax,%eax
 	leaq early_idt_msg(%rip),%rdi
 	call early_printk
@@ -385,7 +394,7 @@ ENTRY(early_idt_handler)
 	call dump_stack
 #ifdef CONFIG_KALLSYMS	
 	leaq early_idt_ripmsg(%rip),%rdi
-	movq 40(%rsp),%rsi	# %rip again
+	movq 56(%rsp),%rsi	# %rip again
 	call __print_symbol
 #endif
 #endif /* EARLY_PRINTK */
@@ -507,6 +516,14 @@ ENTRY(phys_base)
 	/* This must match the first entry in level2_kernel_pgt */
 	.quad   0x0000000000000000
 
+#ifdef CONFIG_COLINUX_KERNEL
+	.globl co_start
+co_start:
+	movq %rsi, co_passage_page
+	movq %rdi, %rsi
+	jmp startup_64
+#endif
+		
 #include "../../x86/xen/xen-head.S"
 	
 	.section .bss, "aw", @nobits

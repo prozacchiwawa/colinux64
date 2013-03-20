@@ -27,6 +27,9 @@
 #include <asm/bios_ebda.h>
 #include <asm/bootparam_utils.h>
 #include <asm/microcode.h>
+#ifdef CONFIG_COLINUX_KERNEL
+#include <linux/cooperative.h>
+#endif
 
 /*
  * Manage page tables very early on.
@@ -34,6 +37,9 @@
 extern pgd_t early_level4_pgt[PTRS_PER_PGD];
 extern pmd_t early_dynamic_pgts[EARLY_DYNAMIC_PAGE_TABLES][PTRS_PER_PMD];
 static unsigned int __initdata next_early_pgt = 2;
+#ifdef CONFIG_COLINUX_KERNEL
+co_arch_passage_page_t *co_passage_page;
+#endif
 
 /* Wipe all early page tables except for the kernel symbol map */
 static void __init reset_early_page_tables(void)

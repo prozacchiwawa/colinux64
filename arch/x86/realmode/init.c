@@ -121,4 +121,7 @@ static int __init set_real_mode_permissions(void)
 
 	return 0;
 }
-early_initcall(set_real_mode_permissions);
+
+#ifndef CONFIG_COLINUX_KERNEL
+arch_initcall(set_real_mode_permissions);
+#endif

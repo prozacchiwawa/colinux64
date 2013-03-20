@@ -159,9 +159,17 @@ archheaders:
 ###
 # Kernel objects
 
+ifeq ($(CONFIG_COLINUX_KERNEL),y)
+KBUILD_CFLAGS += -DCONFIG_COLINUX_KERNEL
+endif
+
 head-y := arch/x86/kernel/head_$(BITS).o
 head-y += arch/x86/kernel/head$(BITS).o
 head-y += arch/x86/kernel/head.o
+
+ifeq ($(CONFIG_FAKE_COLINUX),y)
+head-y += arch/x86/kernel/colinux_fake_head.o
+endif
 
 libs-y  += arch/x86/lib/
 

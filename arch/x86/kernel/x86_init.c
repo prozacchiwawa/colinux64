@@ -29,6 +29,17 @@ void __cpuinit x86_init_noop(void) { }
 void __init x86_init_uint_noop(unsigned int unused) { }
 int __init iommu_init_noop(void) { return 0; }
 void iommu_shutdown_noop(void) { }
+#ifdef CONFIG_COLINUX_KERNEL
+// Later on we can pass ourselves info in an e820 like way
+void __init x86_init_noop_bus_info(struct mpc_bus *m, char *str) { strcpy(str, "no-bus"); }
+void __init x86_init_noop_smp_config(void) { }
+void __init x86_init_noop_get_smp_config(unsigned int early) { }
+void __init x86_init_noop_probe_roms(void) { }
+void __init x86_init_reserve_all_io(void) {
+    struct resource full_io_range = { .name = "all", .start = 0, .end = 0xffff };
+    request_resource(&ioport_resource, &full_io_range);
+}
+#endif
 
 /*
  * The platform setup functions are preset with the default functions
@@ -37,8 +48,13 @@ void iommu_shutdown_noop(void) { }
 struct x86_init_ops x86_init __initdata = {
 
 	.resources = {
+#ifndef CONFIG_COLINUX_KERNEL
 		.probe_roms		= probe_roms,
 		.reserve_resources	= reserve_standard_io_resources,
+#else
+        .probe_roms     = x86_init_noop_probe_roms,
+        .reserve_resources  = x86_init_reserve_all_io,
+#endif
 		.memory_setup		= default_machine_specific_memory_setup,
 	},
 
@@ -47,9 +63,15 @@ struct x86_init_ops x86_init __initdata = {
 		.setup_ioapic_ids	= x86_init_noop,
 		.mpc_apic_id		= default_mpc_apic_id,
 		.smp_read_mpc_oem	= default_smp_read_mpc_oem,
+#ifndef CONFIG_COLINUX_KERNEL
 		.mpc_oem_bus_info	= default_mpc_oem_bus_info,
 		.find_smp_config	= default_find_smp_config,
 		.get_smp_config		= default_get_smp_config,
+#else
+        .mpc_oem_bus_info   = x86_init_noop_bus_info,
+        .find_smp_config    = x86_init_noop_smp_config,
+        .get_smp_config     = x86_init_noop_get_smp_config,
+#endif
 	},
 
 	.irqs = {

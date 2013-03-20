@@ -135,6 +135,7 @@ static void __init probe_page_size_mask(void)
 		page_size_mask |= 1 << PG_LEVEL_2M;
 #endif
 
+#ifndef CONFIG_COLINUX_KERNEL
 	/* Enable PSE if available */
 	if (cpu_has_pse)
 		set_in_cr4(X86_CR4_PSE);
@@ -144,6 +145,7 @@ static void __init probe_page_size_mask(void)
 		set_in_cr4(X86_CR4_PGE);
 		__supported_pte_mask |= _PAGE_GLOBAL;
 	}
+#endif
 }
 
 #ifdef CONFIG_X86_32

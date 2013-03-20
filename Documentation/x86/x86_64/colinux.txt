@@ -1,0 +1,11 @@
+Page allocation:
+
+lpag_t is a logical pfn; an index to a pte in 0xffff8800'00000000 space.
+pgd_t contains a real physical address so it works properly with page tables.
+
+page allocation returns lpag_t, free consumes lpag_t.  This makes the buddy
+allocator work properly.
+
+page tables produce and consume pgd_t, which makes them work properly.
+we can use the type system to repair inconsistencies.
+

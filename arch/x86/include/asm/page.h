@@ -51,7 +51,12 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 #define __pa_symbol(x) \
 	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
 
+#ifdef CONFIG_COLINUX_KERNEL
+extern unsigned long colinux_real_p2v(unsigned long pa);
+#define __va(x)         ((void *)(colinux_real_p2v(x)))
+#else
 #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+#endif
 
 #define __boot_va(x)		__va(x)
 #define __boot_pa(x)		__pa(x)

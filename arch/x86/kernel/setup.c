@@ -1076,7 +1076,9 @@ void __init setup_arch(char **cmdline_p)
 
 	early_trap_pf_init();
 
+#ifndef CONFIG_COLINUX_KERNEL
 	setup_real_mode();
+#endif
 
 	memblock.current_limit = get_max_mapped();
 	dma_contiguous_reserve(0);

@@ -40,6 +40,23 @@ extern void paging_init(void);
 
 struct mm_struct;
 
+#ifdef CONFIG_COLINUX_KERNEL
+struct colinux_revmap_t
+{
+    unsigned long phys;
+    void *virt;
+};
+
+extern struct colinux_revmap_t *page_revmap;
+extern unsigned long page_revmap_size;
+
+// Note: this assumes that we've done the typical self-map trick on the page
+// table so that the physical addresses are available as a pte_t array starting
+// at the next pgd entry after the big physical mapping.
+pteval_t colinux_real_v2p(pteval_t pte);
+pteval_t colinux_real_p2v(pteval_t pte);
+#endif
+
 void set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte);
 
 
@@ -51,7 +68,12 @@ static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr,
 
 static inline void native_set_pte(pte_t *ptep, pte_t pte)
 {
-	*ptep = pte;
+#ifdef CONFIG_COLINUX_KERNEL
+    if ((pte.pte & _PAGE_PRESENT) && !(pte.pte & _PAGE_REALPHYS))
+        ptep->pte = colinux_real_v2p(pte.pte);
+    else
+#endif
+        *ptep = pte;
 }
 
 static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
@@ -61,7 +83,12 @@ static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
 
 static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 {
-	*pmdp = pmd;
+#ifdef CONFIG_COLINUX_KERNEL
+    if ((pmd.pmd & _PAGE_PRESENT) && !(pmd.pmd & _PAGE_REALPHYS))
+        pmdp->pmd = colinux_real_v2p(pmd.pmd);
+    else
+#endif
+        *pmdp = pmd;
 }
 
 static inline void native_pmd_clear(pmd_t *pmd)
@@ -97,7 +124,12 @@ static inline pmd_t native_pmdp_get_and_clear(pmd_t *xp)
 
 static inline void native_set_pud(pud_t *pudp, pud_t pud)
 {
-	*pudp = pud;
+#ifdef CONFIG_COLINUX_KERNEL
+    if ((pud.pud & _PAGE_PRESENT) && !(pud.pud & _PAGE_REALPHYS))
+        pudp->pud = colinux_real_v2p(pud.pud);
+    else
+#endif
+        *pudp = pud;
 }
 
 static inline void native_pud_clear(pud_t *pud)
@@ -107,6 +139,11 @@ static inline void native_pud_clear(pud_t *pud)
 
 static inline void native_set_pgd(pgd_t *pgdp, pgd_t pgd)
 {
+#ifdef CONFIG_COLINUX_KERNEL
+    if ((pgd.pgd & _PAGE_PRESENT) && !(pgd.pgd & _PAGE_REALPHYS))
+        pgdp->pgd = colinux_real_v2p(pgd.pgd);
+    else
+#endif
 	*pgdp = pgd;
 }
 

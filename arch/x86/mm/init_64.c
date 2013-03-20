@@ -377,6 +377,7 @@ void __init init_extra_mapping_uc(unsigned long phys, unsigned long size)
  */
 void __init cleanup_highmap(void)
 {
+#ifndef CONFIG_COLINUX_KERNEL
 	unsigned long vaddr = __START_KERNEL_map;
 	unsigned long vaddr_end = __START_KERNEL_map + KERNEL_IMAGE_SIZE;
 	unsigned long end = roundup((unsigned long)_brk_end, PMD_SIZE) - 1;
@@ -396,6 +397,7 @@ void __init cleanup_highmap(void)
 		if (vaddr < (unsigned long) _text || vaddr > end)
 			set_pmd(pmd, __pmd(0));
 	}
+#endif
 }
 
 static unsigned long __meminit
@@ -614,6 +616,7 @@ kernel_physical_mapping_init(unsigned long start,
 
 		next = (start & PGDIR_MASK) + PGDIR_SIZE;
 
+#ifndef CONFIG_COLINUX_KERNEL
 		if (pgd_val(*pgd)) {
 			pud = (pud_t *)pgd_page_vaddr(*pgd);
 			last_map_addr = phys_pud_init(pud, __pa(start),
@@ -629,6 +632,9 @@ kernel_physical_mapping_init(unsigned long start,
 		pgd_populate(&init_mm, pgd, pud);
 		spin_unlock(&init_mm.page_table_lock);
 		pgd_changed = true;
+#else
+        last_map_addr = next;
+#endif
 	}
 
 	if (pgd_changed)

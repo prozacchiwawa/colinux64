@@ -13,6 +13,63 @@
 #define PGALLOC_USER_GFP 0
 #endif
 
+#ifdef CONFIG_COLINUX_KERNEL
+struct colinux_revmap_t *page_revmap;
+unsigned long page_revmap_size;
+
+unsigned long colinux_real_v2p(unsigned long pte)
+{
+    unsigned long flags;
+    unsigned long *map;
+    unsigned long cr3, pml3, pml2, pt, entry;
+    unsigned long pml4_e;
+    unsigned long pml3_e;
+    unsigned long pml2_e;
+    unsigned long pt_e, pt_map_e;
+    pte += __PAGE_OFFSET;
+    pml4_e = (pte >> (PAGE_SHIFT + (9 * 3))) & 0x1ff;
+    pml3_e = (pte >> (PAGE_SHIFT + (9 * 2))) & 0x1ff;
+    pml2_e = (pte >> (PAGE_SHIFT + 9)) & 0x1ff;
+    pt_e = (pte >> PAGE_SHIFT) & 0x1ff;
+    __asm__("mov %%cr3, %0" : "=r"(cr3));
+    map = (unsigned long *)colinux_real_p2v(cr3);
+    pml3 = map[pml4_e];
+    if (!(pml3 & _PAGE_PRESENT))
+        panic("pgd[%ld] is not present\n", pml4_e);
+    map = (unsigned long *)colinux_real_p2v(pml3 & ~(PAGE_SIZE - 1));
+    pml2 = map[pml3_e];
+    if (!(pml2 & _PAGE_PRESENT))
+        panic("pud[%ld] is not present\n", pml3_e);
+    map = (unsigned long *)colinux_real_p2v(pml2 & ~(PAGE_SIZE - 1));
+    pt = map[pml2_e];
+    if (!(pt & _PAGE_PRESENT))
+        panic("pmd[%ld] is not present\n", pml2_e);
+    map = (unsigned long *)colinux_real_p2v(pt & ~(PAGE_SIZE - 1));
+    entry = map[pt_e];
+    entry = (entry & ~(PAGE_SIZE - 1)) | (pte & (PAGE_SIZE - 1)) | _PAGE_REALPHYS;
+    return entry;
+}
+
+unsigned long colinux_real_p2v(unsigned long pte)
+{
+    int low = 0, high = page_revmap_size, mid = high / 2;
+    unsigned long ptecopy = pte & ~(PAGE_SIZE - 1);
+    if (ptecopy > __PAGE_OFFSET)
+        ptecopy -= __PAGE_OFFSET;
+    if (ptecopy > (1 << 26))
+        return pte;
+    while (page_revmap[mid].phys != ptecopy) {
+        if (page_revmap[mid].phys > ptecopy) {
+            high = mid;
+        } else {
+            low = mid;
+        }
+        mid = (high + low) / 2;
+    }
+    return (unsigned long)page_revmap[mid].virt | (pte & (PAGE_SIZE - 1));
+}
+#endif
+
 gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
 
 pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)

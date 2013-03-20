@@ -170,7 +170,11 @@ static struct console early_serial_console = {
 };
 
 /* Direct interface for emergencies */
+#ifdef CONFIG_COLINUX_KERNEL
+static struct console *early_console = &early_serial_console;
+#else
 static struct console *early_console = &early_vga_console;
+#endif
 static int __initdata early_console_initialized;
 
 asmlinkage void early_printk(const char *fmt, ...)

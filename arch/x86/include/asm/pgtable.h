@@ -30,6 +30,11 @@ extern struct list_head pgd_list;
 
 extern struct mm_struct *pgd_page_get_mm(struct page *page);
 
+#ifdef CONFIG_COLINUX_KERNEL
+extern unsigned long colinux_real_v2p(unsigned long addr);
+extern unsigned long colinux_real_p2v(unsigned long addr);
+#endif
+
 #ifdef CONFIG_PARAVIRT
 #include <asm/paravirt.h>
 #else  /* !CONFIG_PARAVIRT */
