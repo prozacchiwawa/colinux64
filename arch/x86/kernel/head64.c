@@ -29,6 +29,18 @@
 #include <asm/microcode.h>
 #ifdef CONFIG_COLINUX_KERNEL
 #include <linux/cooperative.h>
+
+co_info_t co_info = { 
+	CO_LINUX_API_VERSION,
+	__GNUC__,
+	__GNUC_MINOR__,
+	__GXX_ABI_VERSION
+};
+co_arch_info_t co_arch_info = { __KERNEL_CS, __KERNEL_DS };
+#endif
+
+#ifdef CONFIG_FAKE_COLINUX
+extern void colinux_fake_head(char *real_mode_data);
 #endif
 
 /*
@@ -159,6 +171,10 @@ void __init x86_64_start_kernel(char * real_mode_data)
 	BUILD_BUG_ON(!(((MODULES_END - 1) & PGDIR_MASK) ==
 				(__START_KERNEL & PGDIR_MASK)));
 	BUILD_BUG_ON(__fix_to_virt(__end_of_fixed_addresses) <= MODULES_END);
+
+#ifdef CONFIG_FAKE_COLINUX
+    colinux_fake_head(real_mode_data);
+#endif
 
 	/* Kill off the identity-map trampoline */
 	reset_early_page_tables();
