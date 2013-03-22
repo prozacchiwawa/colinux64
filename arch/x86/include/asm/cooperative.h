@@ -24,7 +24,7 @@ typedef struct {
 #pragma pack()
 
 typedef struct {
-    unsigned long phys;
+    void *phys;
     void *virt;
 } colinux_revmap_t;
 
@@ -266,7 +266,7 @@ typedef struct co_arch_passage_page {
 			co_arch_state_stack_t linuxvm_state;
 			
 			/* Control parameters */
-			unsigned long operation;
+			uint64_t operation;
 			void *params[];
 		};
 		char first_page[0x1000];

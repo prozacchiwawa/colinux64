@@ -204,7 +204,7 @@ extern co_arch_passage_page_t *co_passage_page;
 #  define co_current (co_passage_page->host_state)
 # endif
 
-# define co_switch() co_passage_page_func_low(co_current, co_other)
+# define co_switch() co_passage_page_func_low(co_passage_page->linuxvm_state, co_passage_page->host_state)
 
 #endif /* CO_KERNEL */
 
@@ -384,6 +384,9 @@ typedef struct {
   uint64_t co_initrd_size;
   uint64_t co_cpu_khz;
   uint64_t filler[5];		// compatible old api: empty 5,6,7,8,9
+  uint64_t co_real_mode_data;
+  uint64_t co_revmap;
+  uint64_t co_passage_page_vaddr;
   char co_boot_parameters[CO_BOOTPARAM_STRING_LENGTH]; // params[10]
 } co_boot_params_t;
 

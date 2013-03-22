@@ -398,7 +398,14 @@ ENTRY(early_idt_handler)
 	call __print_symbol
 #endif
 #endif /* EARLY_PRINTK */
-1:	hlt
+1:
+#ifdef CONFIG_LINUX_KERNEL
+	push 0
+	push 0
+	.globl co_terminate_panic
+	call co_terminate_panic
+#endif
+	hlt
 	jmp 1b
 
 20:	# Exception table entry found or page table generated
@@ -519,8 +526,6 @@ ENTRY(phys_base)
 #ifdef CONFIG_COLINUX_KERNEL
 	.globl co_start
 co_start:
-	movq %rsi, co_passage_page
-	movq %rdi, %rsi
 	jmp startup_64
 #endif
 		

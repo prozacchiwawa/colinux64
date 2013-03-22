@@ -177,10 +177,21 @@ void __init x86_64_start_kernel(char * real_mode_data)
 #endif
 
 	/* Kill off the identity-map trampoline */
+#ifndef CONFIG_COLINUX_KERNEL
 	reset_early_page_tables();
+#endif
 
 	/* clear bss before set_intr_gate with early_idt_handler */
 	clear_bss();
+
+#ifdef CONFIG_COLINUX_KERNEL
+	co_boot_params_t *co_boot_params = (co_boot_params_t*)real_mode_data;
+	co_passage_page = 
+		(co_arch_passage_page_t*)co_boot_params->co_passage_page_vaddr;
+	real_mode_data = co_boot_params->co_real_mode_data;
+	page_revmap = co_boot_params->co_revmap;
+	page_revmap_size = co_boot_params->co_memory_size >> PAGE_SHIFT;
+#endif
 
 	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)
 		set_intr_gate(i, &early_idt_handlers[i]);

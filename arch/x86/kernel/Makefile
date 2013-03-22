@@ -2,12 +2,13 @@
 # Makefile for the linux kernel.
 #
 
+extra-y                := head_$(BITS).o head$(BITS).o head.o vmlinux.lds
+
 ifeq ($(CONFIG_COLINUX_KERNEL),y)
 KBUILD_CFLAGS          += -DCONFIG_COLINUX_KERNEL
 KBUILD_AFLAGS          += -DCONFIG_COLINUX_KERNEL
+extra-y                += colinux.o
 endif
-
-extra-y                := head_$(BITS).o head$(BITS).o head.o vmlinux.lds
 
 ifeq ($(CONFIG_FAKE_COLINUX),y)
 KBUILD_CFLAGS          += -DCONFIG_FAKE_COLINUX
