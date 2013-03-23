@@ -399,16 +399,11 @@ ENTRY(early_idt_handler)
 #endif
 #endif /* EARLY_PRINTK */
 1:
-#ifdef CONFIG_LINUX_KERNEL
-	push 0
-	push 0
-	.globl co_terminate_panic
-	call co_terminate_panic
-#endif
 	hlt
 	jmp 1b
 
 20:	# Exception table entry found or page table generated
+
 	popq %r11
 	popq %r10
 	popq %r9

@@ -56,8 +56,6 @@ unsigned long colinux_real_p2v(unsigned long pte)
     unsigned long ptecopy = pte & ~(PAGE_SIZE - 1);
     if (ptecopy > __PAGE_OFFSET)
         ptecopy -= __PAGE_OFFSET;
-    if (ptecopy > (1 << 26))
-        return pte;
     while (page_revmap[mid].phys != ptecopy) {
         if (page_revmap[mid].phys > ptecopy) {
             high = mid;
