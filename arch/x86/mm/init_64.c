@@ -606,8 +606,13 @@ kernel_physical_mapping_init(unsigned long start,
 	unsigned long next, last_map_addr = end;
 	unsigned long addr;
 
+#ifndef CONFIG_COLINUX_KERNEL
 	start = (unsigned long)__va(start);
 	end = (unsigned long)__va(end);
+#else
+	start = (unsigned long)__PAGE_OFFSET + start;
+	end = (unsigned long)__PAGE_OFFSET + end;
+#endif
 	addr = start;
 
 	for (; start < end; start = next) {

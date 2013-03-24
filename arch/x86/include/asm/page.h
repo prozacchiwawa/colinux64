@@ -37,6 +37,7 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
 #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
 
+#ifndef CONFIG_COLINUX_KERNEL
 #define __pa(x)		__phys_addr((unsigned long)(x))
 #define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
 /* __pa_symbol should be used for C visible symbols.
@@ -50,9 +51,15 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
  */
 #define __pa_symbol(x) \
 	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
+#else
+#define __pa(x)         colinux_real_v2p(((unsigned long)(x)))
+#define __pa_nodebug(x) __pa(x)
+#define __pa_symbol(x)  __pa(x)
+#endif
 
 #ifdef CONFIG_COLINUX_KERNEL
 extern unsigned long colinux_real_p2v(unsigned long pa);
+extern unsigned long colinux_real_v2p(unsigned long va);
 #define __va(x)         ((void *)(colinux_real_p2v(x)))
 #else
 #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))

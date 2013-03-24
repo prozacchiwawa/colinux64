@@ -395,6 +395,7 @@ static unsigned long __init init_range_memory_mapping(
 #define STEP_SIZE_SHIFT 5
 void __init init_mem_mapping(void)
 {
+#ifndef CONFIG_COLINUX_KERNEL
 	unsigned long end, real_end, start, last_start;
 	unsigned long step_size;
 	unsigned long addr;
@@ -448,6 +449,7 @@ void __init init_mem_mapping(void)
 	}
 #else
 	early_ioremap_page_table_range_init();
+#endif
 #endif
 
 	load_cr3(swapper_pg_dir);

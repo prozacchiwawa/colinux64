@@ -218,11 +218,13 @@ void __init x86_64_start_kernel(char * real_mode_data)
 
 void __init x86_64_start_reservations(char *real_mode_data)
 {
+#ifndef CONFIG_COLINUX_KERNEL
 	/* version is always not zero if it is copied */
 	if (!boot_params.hdr.version)
 		copy_bootdata(__va(real_mode_data));
 
 	reserve_ebda_region();
+#endif
 
 	start_kernel();
 }

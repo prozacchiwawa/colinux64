@@ -1,3 +1,7 @@
+ifeq ($(CONFIG_COLINUX_KERNEL),y)
+KBUILD_CFLAGS           += -DCONFIG_COLINUX_KERNEL
+endif
+
 obj-y	:=  init.o init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
 	    pat.o pgtable.o physaddr.o gup.o setup_nx.o
 

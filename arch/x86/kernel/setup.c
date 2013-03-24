@@ -852,9 +852,11 @@ void __init setup_arch(char **cmdline_p)
 
 	early_trap_init();
 	early_cpu_init();
+#ifndef CONFIG_COLINUX_KERNEL
 	early_ioremap_init();
 
 	setup_olpc_ofw_pgd();
+#endif
 
 	ROOT_DEV = old_decode_dev(boot_params.hdr.root_dev);
 	screen_info = boot_params.screen_info;
@@ -1013,6 +1015,13 @@ void __init setup_arch(char **cmdline_p)
 	/* max_low_pfn get updated here */
 	find_low_pfn_range();
 #else
+#ifdef CONFIG_COLINUX_KERNEL
+	max_low_pfn = 0xa0000;
+	max_pfn = page_revmap_size;
+	high_memory = (page_revmap_size < 1 << 30ul) ? 
+		page_revmap_size : 1 << 30ul;
+	num_physpages = page_revmap_size;
+#else
 	num_physpages = max_pfn;
 
 	check_x2apic();
@@ -1026,13 +1035,16 @@ void __init setup_arch(char **cmdline_p)
 
 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
 #endif
+#endif
 
+#ifndef CONFIG_COLINUX_KERNEL
 	/*
 	 * Find and reserve possible boot-time SMP configuration:
 	 */
 	find_smp_config();
 
 	reserve_ibft_region();
+#endif
 
 	early_alloc_pgt_buf();
 
@@ -1043,7 +1055,9 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	reserve_brk();
 
+#ifndef CONFIG_COLINUX_KERNEL
 	cleanup_highmap();
+#endif
 
 	memblock.current_limit = ISA_END_ADDRESS;
 	memblock_x86_fill();
@@ -1067,7 +1081,9 @@ void __init setup_arch(char **cmdline_p)
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
 #endif
 
+#ifndef CONFIG_COLINUX_KERNEL
 	reserve_real_mode();
+#endif
 
 	trim_platform_memory_ranges();
 	trim_low_memory_range();
