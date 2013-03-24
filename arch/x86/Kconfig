@@ -148,7 +148,8 @@ config MMU
 	def_bool y
 
 config COLINUX_KERNEL
-    def_bool n
+	bool "Cooperative Linux"
+	default "n"
 
 config SBUS
 	bool
