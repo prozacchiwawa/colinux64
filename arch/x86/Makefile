@@ -160,8 +160,8 @@ archheaders:
 # Kernel objects
 
 head-y := 
-ifeq ($(CONFIG_COLINUX_KERNEL),y)
-KBUILD_CFLAGS += -DCONFIG_COLINUX_KERNEL
+ifeq ($(CONFIG_COOPERATIVE),y)
+KBUILD_CFLAGS += -DCONFIG_COOPERATIVE
 head-y += arch/x86/kernel/colinux.o
 endif
 

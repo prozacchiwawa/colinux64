@@ -84,9 +84,15 @@ RESERVE_BRK(early_pgt_alloc, INIT_PGT_BUF_SIZE);
 void  __init early_alloc_pgt_buf(void)
 {
 	unsigned long tables = INIT_PGT_BUF_SIZE;
-	phys_addr_t base;
+	phys_addr_t base, eb;
 
-	base = __pa(extend_brk(tables, PAGE_SIZE));
+	eb = extend_brk(tables, PAGE_SIZE);
+
+	printk(KERN_INFO "eb %p\n", eb);
+
+	base = __pa(eb);
+
+	printk(KERN_INFO "base %p\n", base);
 
 	pgt_buf_start = base >> PAGE_SHIFT;
 	pgt_buf_end = pgt_buf_start;
@@ -135,7 +141,7 @@ static void __init probe_page_size_mask(void)
 		page_size_mask |= 1 << PG_LEVEL_2M;
 #endif
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	/* Enable PSE if available */
 	if (cpu_has_pse)
 		set_in_cr4(X86_CR4_PSE);
@@ -395,7 +401,6 @@ static unsigned long __init init_range_memory_mapping(
 #define STEP_SIZE_SHIFT 5
 void __init init_mem_mapping(void)
 {
-#ifndef CONFIG_COLINUX_KERNEL
 	unsigned long end, real_end, start, last_start;
 	unsigned long step_size;
 	unsigned long addr;
@@ -450,6 +455,12 @@ void __init init_mem_mapping(void)
 #else
 	early_ioremap_page_table_range_init();
 #endif
+//#else
+#if 0
+	unsigned long cr3;
+	__asm__("mov %%cr3,%%rax\n\t"
+			"mov %%rax, %0\n\t" : "=r"(cr3));
+	memcpy(swapper_pg_dir, __va(cr3), PAGE_SIZE);
 #endif
 
 	load_cr3(swapper_pg_dir);

@@ -147,7 +147,7 @@ config HAVE_LATENCYTOP_SUPPORT
 config MMU
 	def_bool y
 
-config COLINUX_KERNEL
+config COOPERATIVE
 	bool "Cooperative Linux"
 	default "n"
 
@@ -876,7 +876,7 @@ config X86_LOCAL_APIC
 
 config X86_IO_APIC
 	def_bool y
-	depends on X86_64 || SMP || X86_32_NON_STANDARD || X86_UP_IOAPIC
+	depends on (X86_64 || SMP || X86_32_NON_STANDARD || X86_UP_IOAPIC) && !COOPERATIVE
 
 config X86_VISWS_APIC
 	def_bool y

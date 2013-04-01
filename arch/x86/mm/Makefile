@@ -1,5 +1,5 @@
-ifeq ($(CONFIG_COLINUX_KERNEL),y)
-KBUILD_CFLAGS           += -DCONFIG_COLINUX_KERNEL
+ifeq ($(CONFIG_COOPERATIVE),y)
+KBUILD_CFLAGS           += -DCONFIG_COOPERATIVE
 endif
 
 obj-y	:=  init.o init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \

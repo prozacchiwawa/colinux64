@@ -40,7 +40,7 @@ extern void paging_init(void);
 
 struct mm_struct;
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 struct colinux_revmap_t
 {
     unsigned long phys;
@@ -68,9 +68,9 @@ static inline void native_pte_clear(struct mm_struct *mm, unsigned long addr,
 
 static inline void native_set_pte(pte_t *ptep, pte_t pte)
 {
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
     if ((pte.pte & _PAGE_PRESENT) && !(pte.pte & _PAGE_REALPHYS))
-        ptep->pte = colinux_real_v2p(pte.pte);
+        ptep->pte = colinux_real_v2p(pte.pte) | _PAGE_REALPHYS;
     else
 #endif
         *ptep = pte;
@@ -83,9 +83,9 @@ static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
 
 static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
 {
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
     if ((pmd.pmd & _PAGE_PRESENT) && !(pmd.pmd & _PAGE_REALPHYS))
-        pmdp->pmd = colinux_real_v2p(pmd.pmd);
+        pmdp->pmd = colinux_real_v2p(pmd.pmd) | _PAGE_REALPHYS;
     else
 #endif
         *pmdp = pmd;
@@ -124,9 +124,9 @@ static inline pmd_t native_pmdp_get_and_clear(pmd_t *xp)
 
 static inline void native_set_pud(pud_t *pudp, pud_t pud)
 {
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
     if ((pud.pud & _PAGE_PRESENT) && !(pud.pud & _PAGE_REALPHYS))
-        pudp->pud = colinux_real_v2p(pud.pud);
+        pudp->pud = colinux_real_v2p(pud.pud) | _PAGE_REALPHYS;
     else
 #endif
         *pudp = pud;
@@ -139,9 +139,9 @@ static inline void native_pud_clear(pud_t *pud)
 
 static inline void native_set_pgd(pgd_t *pgdp, pgd_t pgd)
 {
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
     if ((pgd.pgd & _PAGE_PRESENT) && !(pgd.pgd & _PAGE_REALPHYS))
-        pgdp->pgd = colinux_real_v2p(pgd.pgd);
+        pgdp->pgd = colinux_real_v2p(pgd.pgd) | _PAGE_REALPHYS;
     else
 #endif
 	*pgdp = pgd;

@@ -40,7 +40,7 @@
 #define _PAGE_DIRTY	(_AT(pteval_t, 1) << _PAGE_BIT_DIRTY)
 #define _PAGE_PSE	(_AT(pteval_t, 1) << _PAGE_BIT_PSE)
 #define _PAGE_GLOBAL	(_AT(pteval_t, 1) << _PAGE_BIT_GLOBAL)
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 #define _PAGE_REALPHYS  (_AT(pteval_t, 1) << _PAGE_BIT_IOMAP)
 #endif
 #define _PAGE_IOMAP	(_AT(pteval_t, 1) << _PAGE_BIT_IOMAP)
@@ -86,7 +86,7 @@
  */
 #define _PAGE_NUMA	_PAGE_PROTNONE
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 #define _PAGE_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER |	\
 			 _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_REALPHYS)
 #define _KERNPG_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED |	\

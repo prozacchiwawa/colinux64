@@ -130,7 +130,7 @@ RESERVE_BRK(dmi_alloc, 65536);
 static __initdata unsigned long _brk_start = (unsigned long)__brk_base;
 unsigned long _brk_end = (unsigned long)__brk_base;
 
-#ifdef CONFIG_X86_64
+#if defined(CONFIG_X86_64) && !defined(CONFIG_COOPERATIVE)
 int default_cpu_present_to_apicid(int mps_cpu)
 {
 	return __default_cpu_present_to_apicid(mps_cpu);
@@ -852,7 +852,7 @@ void __init setup_arch(char **cmdline_p)
 
 	early_trap_init();
 	early_cpu_init();
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	early_ioremap_init();
 
 	setup_olpc_ofw_pgd();
@@ -1015,7 +1015,7 @@ void __init setup_arch(char **cmdline_p)
 	/* max_low_pfn get updated here */
 	find_low_pfn_range();
 #else
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 	max_low_pfn = 0xa0000;
 	max_pfn = page_revmap_size;
 	high_memory = (page_revmap_size < 1 << 30ul) ? 
@@ -1037,7 +1037,7 @@ void __init setup_arch(char **cmdline_p)
 #endif
 #endif
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	/*
 	 * Find and reserve possible boot-time SMP configuration:
 	 */
@@ -1055,7 +1055,7 @@ void __init setup_arch(char **cmdline_p)
 	 */
 	reserve_brk();
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	cleanup_highmap();
 #endif
 
@@ -1081,7 +1081,7 @@ void __init setup_arch(char **cmdline_p)
 			(max_pfn_mapped<<PAGE_SHIFT) - 1);
 #endif
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	reserve_real_mode();
 #endif
 
@@ -1092,7 +1092,7 @@ void __init setup_arch(char **cmdline_p)
 
 	early_trap_pf_init();
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	setup_real_mode();
 #endif
 
@@ -1136,7 +1136,9 @@ void __init setup_arch(char **cmdline_p)
 	kvmclock_init();
 #endif
 
+#ifndef CONFIG_COOPERATIVE
 	x86_init.paging.pagetable_init();
+#endif
 
 	if (boot_cpu_data.cpuid_level >= 0) {
 		/* A CPU has %cr4 if and only if it has CPUID */
@@ -1184,6 +1186,7 @@ void __init setup_arch(char **cmdline_p)
 		x86_io_apic_ops.init();
 
 	kvm_guest_init();
+
 
 	e820_reserve_resources();
 	e820_mark_nosave_regions(max_low_pfn);

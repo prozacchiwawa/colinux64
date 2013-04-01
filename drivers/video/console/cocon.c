@@ -40,9 +40,9 @@ static const char __init *cocon_startup(void)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -79,11 +79,11 @@ static void cocon_init(struct vc_data *c, int init)
 	c->vc_visible_origin = 0;
 	c->vc_origin = 0;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -99,11 +99,11 @@ static void cocon_deinit(struct vc_data *c)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -120,11 +120,11 @@ static void cocon_clear(struct vc_data *c, int top, int left, int rows, int cols
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -145,11 +145,11 @@ static void cocon_putc(struct vc_data *c, int charattr, int y, int x)
 	co_message_t *co_message;
 	co_console_message_t *message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -163,8 +163,8 @@ static void cocon_putc(struct vc_data *c, int charattr, int y, int x)
 }
 
 
-static void cocon_putcs(struct vc_data *conp,
-			const unsigned short *s, int count, int yy, int xx)
+void cocon_putcs(struct vc_data *conp,
+				 const unsigned short *s, int count, int yy, int xx)
 {
 	unsigned long flags;
 	co_console_message_t *message;
@@ -173,11 +173,11 @@ static void cocon_putcs(struct vc_data *conp,
 //	if (count > CO_MAX_PARAM_SIZE/2 - 16)
 //		return;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -192,7 +192,7 @@ static void cocon_putcs(struct vc_data *conp,
 	co_send_message_restore(flags);
 }
 
-static u8 cocon_build_attr(struct vc_data *c, u8 color, u8 intensity, u8 blink, u8 underline, u8 reverse, u8 italic)
+u8 cocon_build_attr(struct vc_data *c, u8 color, u8 intensity, u8 blink, u8 underline, u8 reverse, u8 italic)
 {
 	u8 attr = color;
 
@@ -217,9 +217,9 @@ static void cocon_invert_region(struct vc_data *c, u16 *p, int count)
 	co_console_message_t *message;
 	unsigned long x = (unsigned long)(p - c->vc_origin);  // UPDATE: vc_origin = 0; but not yet
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -246,11 +246,11 @@ static void cocon_cursor(struct vc_data *c, int mode)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -281,9 +281,9 @@ static int cocon_switch(struct vc_data *c)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -302,9 +302,9 @@ static int cocon_set_palette(struct vc_data *c, unsigned char *table)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -323,9 +323,9 @@ static int cocon_blank(struct vc_data *c, int blank, int mode_switchg)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -339,15 +339,15 @@ static int cocon_blank(struct vc_data *c, int blank, int mode_switchg)
 }
 
 
-static int cocon_scrolldelta(struct vc_data *c, int lines)
+int cocon_scrolldelta(struct vc_data *c, int lines)
 {
 	unsigned long flags;
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -366,9 +366,9 @@ static int cocon_set_origin(struct vc_data *c)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -387,9 +387,9 @@ static void cocon_save_screen(struct vc_data *c)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -406,9 +406,9 @@ static int cocon_scroll(struct vc_data *c, int t, int b, int dir, int lines)
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (co_message) {
-		message = (co_console_message_t *)co_message->data;
+		message = (co_console_message_t *)&co_message[1];
 		co_message->from = CO_MODULE_LINUX;
 		co_message->to = CO_MODULE_CONSOLE;
 		co_message->priority = CO_PRIORITY_DISCARDABLE;
@@ -434,11 +434,11 @@ static void cocon_bmove(struct vc_data *c, int sy, int sx, int dy, int dx, int h
 	co_console_message_t *message;
 	co_message_t *co_message;
 
-	co_message = co_send_message_save(&flags);
+	co_message = (co_message_t*)co_send_message_save(&flags);
 	if (!co_message)
 		return;
 
-	message = (co_console_message_t *)co_message->data;
+	message = (co_console_message_t *)&co_message[1];
 	co_message->from = CO_MODULE_LINUX;
 	co_message->to = CO_MODULE_CONSOLE;
 	co_message->priority = CO_PRIORITY_DISCARDABLE;

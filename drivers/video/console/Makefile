@@ -2,6 +2,10 @@
 # 5 Aug 1999, James Simmons, <mailto:jsimmons@users.sf.net>
 # Rewritten to use lists instead of if-statements.
 
+ifeq ($(CONFIG_COOPERATIVE),y)
+KBUILD_CFLAGS += -DCONFIG_COOPERATIVE
+endif
+
 # Font handling
 font-objs := fonts.o
 

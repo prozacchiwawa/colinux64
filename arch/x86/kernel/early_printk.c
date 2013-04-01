@@ -169,9 +169,54 @@ static struct console early_serial_console = {
 	.index =	-1,
 };
 
+#ifdef CONFIG_COOPERATIVE
+#define EARLY_COCON_X 80
+#define EARLY_COCON_Y 25
+static int cocon_x = 0, cocon_y = 0;
+unsigned short cocon_buffer[EARLY_COCON_X];
+
+extern void cocon_scrolldelta(void *, int);
+extern void cocon_putcs(void *, unsigned short *buf, int count, int y, int x);
+extern u8 cocon_build_attr(struct vc_data *c, u8 color, u8 intensity, u8 blink, u8 underline, u8 reverse, u8 italic);
+
+static void early_cocon_advance(struct console *con) 
+{
+	cocon_scrolldelta(NULL, 1);
+}
+
+void early_cocon_write(struct console *con, const char *s, unsigned n)
+{
+	int i;
+	int last = 0;
+	
+	for (i = 0; i < n; i++) {
+		if (s[i] == '\n' || s[i] == '\0' || i - last == EARLY_COCON_X) {
+			int len = i - last;
+			cocon_putcs(NULL, cocon_buffer + cocon_x - len, len, cocon_y, cocon_x - len);
+			cocon_y++;
+			if (cocon_y == EARLY_COCON_Y) {
+				early_cocon_advance(con);
+				cocon_y--;
+			}
+			cocon_x = 0;
+		} else {
+			cocon_buffer[cocon_x] = (0x17 << 8) | s[i];
+			cocon_x++;
+		}
+	}
+}
+
+static struct console early_colinux_console = {
+	.name =		"earlycocon",
+	.write =	early_cocon_write,
+	.flags =	CON_PRINTBUFFER,
+	.index =	-1,
+};
+#endif
+
 /* Direct interface for emergencies */
-#ifdef CONFIG_COLINUX_KERNEL
-static struct console *early_console = &early_serial_console;
+#ifdef CONFIG_COOPERATIVE
+static struct console *early_console = &early_colinux_console;
 #else
 static struct console *early_console = &early_vga_console;
 #endif

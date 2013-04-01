@@ -72,7 +72,7 @@ startup_64:
 	leaq	_text(%rip), %rbp
 	subq	$_text - __START_KERNEL_map, %rbp
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	/* Is the address not 2M aligned? */
 	movq	%rbp, %rax
 	andl	$~PMD_PAGE_MASK, %eax
@@ -174,7 +174,7 @@ ENTRY(secondary_startup_64)
 	 * after the boot processor executes this code.
 	 */
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	movq	$(init_level4_pgt - __START_KERNEL_map), %rax
 1:
 
@@ -518,7 +518,7 @@ ENTRY(phys_base)
 	/* This must match the first entry in level2_kernel_pgt */
 	.quad   0x0000000000000000
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 	.globl co_start
 co_start:
 	jmp startup_64

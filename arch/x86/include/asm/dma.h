@@ -80,7 +80,11 @@
 #define MAX_DMA_ADDRESS      (PAGE_OFFSET + 0x1000000)
 #else
 /* Compat define for old dma zone */
+#ifdef CONFIG_COOPERATIVE
+#define MAX_DMA_ADDRESS ((unsigned long)__PAGE_OFFSET + (64 * 1024))
+#else
 #define MAX_DMA_ADDRESS ((unsigned long)__va(MAX_DMA_PFN << PAGE_SHIFT))
+#endif
 #endif
 
 /* 8237 DMA controllers */

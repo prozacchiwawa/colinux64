@@ -9,7 +9,7 @@
 
 #include <asm/ptrace.h>
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 
 extern bool co_host_fpu_saved;
 extern char co_host_fpu[0x200];

@@ -2,6 +2,7 @@
 # Makefile for local APIC drivers and for the IO-APIC code
 #
 
+ifneq ($(CONFIG_COOPERATIVE),y)
 obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o apic_noop.o ipi.o
 obj-y				+= hw_nmi.o
 
@@ -25,3 +26,6 @@ obj-$(CONFIG_X86_ES7000)	+= es7000_32.o
 
 # For 32bit, probe_32 need to be listed last
 obj-$(CONFIG_X86_LOCAL_APIC)	+= probe_$(BITS).o
+else
+obj-y += colinux_apic.o
+endif

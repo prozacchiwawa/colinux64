@@ -45,8 +45,8 @@ config VGACON_SOFT_SCROLLBACK_SIZE
 	 screenfuls of scrollback buffer
 
 config COOPERATIVE_CONSOLE
-	bool 'coLinux Pseudo-VGA text console' if COLINUX_KERNEL
-	depends on !VGA_CONSOLE && COLINUX_KERNEL
+	bool "coLinux Pseudo-VGA text console" if COOPERATIVE
+	depends on !VGA_CONSOLE && COOPERATIVE
 	default y
 	help
 	  You need to say Y here if you compile a Linux kernel in cooperative

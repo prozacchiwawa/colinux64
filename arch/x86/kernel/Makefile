@@ -4,9 +4,9 @@
 
 extra-y                := head_$(BITS).o head$(BITS).o head.o vmlinux.lds
 
-ifeq ($(CONFIG_COLINUX_KERNEL),y)
-KBUILD_CFLAGS          += -DCONFIG_COLINUX_KERNEL
-KBUILD_AFLAGS          += -DCONFIG_COLINUX_KERNEL
+ifeq ($(CONFIG_COOPERATIVE),y)
+KBUILD_CFLAGS          += -DCONFIG_COOPERATIVE
+KBUILD_AFLAGS          += -DCONFIG_COOPERATIVE
 extra-y                += colinux.o
 endif
 

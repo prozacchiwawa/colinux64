@@ -1263,7 +1263,9 @@ void __cpuinit cpu_init(void)
 	barrier();
 
 	x86_configure_nx();
+#ifndef CONFIG_COOPERATIVE
 	enable_x2apic();
+#endif
 
 	/*
 	 * set up and load the per-CPU TSS
@@ -1304,8 +1306,10 @@ void __cpuinit cpu_init(void)
 
 	fpu_init();
 
+#ifndef CONFIG_COOPERATIVE
 	if (is_uv_system())
 		uv_cpu_init();
+#endif
 }
 
 #else

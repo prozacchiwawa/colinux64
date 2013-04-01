@@ -377,7 +377,7 @@ void __init init_extra_mapping_uc(unsigned long phys, unsigned long size)
  */
 void __init cleanup_highmap(void)
 {
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	unsigned long vaddr = __START_KERNEL_map;
 	unsigned long vaddr_end = __START_KERNEL_map + KERNEL_IMAGE_SIZE;
 	unsigned long end = roundup((unsigned long)_brk_end, PMD_SIZE) - 1;
@@ -606,7 +606,7 @@ kernel_physical_mapping_init(unsigned long start,
 	unsigned long next, last_map_addr = end;
 	unsigned long addr;
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	start = (unsigned long)__va(start);
 	end = (unsigned long)__va(end);
 #else
@@ -621,7 +621,7 @@ kernel_physical_mapping_init(unsigned long start,
 
 		next = (start & PGDIR_MASK) + PGDIR_SIZE;
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 		if (pgd_val(*pgd)) {
 			pud = (pud_t *)pgd_page_vaddr(*pgd);
 			last_map_addr = phys_pud_init(pud, __pa(start),

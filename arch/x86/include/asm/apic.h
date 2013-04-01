@@ -97,6 +97,7 @@ extern u32 safe_xapic_wait_icr_idle(void);
 extern void xapic_icr_write(u32, u32);
 extern int setup_profiling_timer(unsigned int);
 
+#ifndef CONFIG_COOPERATIVE
 static inline void native_apic_mem_write(u32 reg, u32 v)
 {
 	volatile u32 *addr = (volatile u32 *)(APIC_BASE + reg);
@@ -115,6 +116,7 @@ extern void native_apic_wait_icr_idle(void);
 extern u32 native_safe_apic_wait_icr_idle(void);
 extern void native_apic_icr_write(u32 low, u32 id);
 extern u64 native_apic_icr_read(void);
+#endif
 
 extern int x2apic_mode;
 
@@ -186,6 +188,7 @@ extern void enable_x2apic(void);
 extern void x2apic_icr_write(u32 low, u32 id);
 static inline int x2apic_enabled(void)
 {
+#ifndef CONFIG_COOPERATIVE
 	u64 msr;
 
 	if (!cpu_has_x2apic)
@@ -194,6 +197,7 @@ static inline int x2apic_enabled(void)
 	rdmsrl(MSR_IA32_APICBASE, msr);
 	if (msr & X2APIC_ENABLE)
 		return 1;
+#endif
 	return 0;
 }
 

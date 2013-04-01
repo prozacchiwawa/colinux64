@@ -73,7 +73,7 @@ void __init init_ISA_irqs(void)
 	const char *name = chip->name;
 	int i;
 
-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_LOCAL_APIC)
+#if (defined(CONFIG_X86_64) || defined(CONFIG_X86_LOCAL_APIC)) && !defined(CONFIG_COOPERATIVE)
 	init_bsp_APIC();
 #endif
 	legacy_pic->init(0);

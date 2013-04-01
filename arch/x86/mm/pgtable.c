@@ -13,7 +13,7 @@
 #define PGALLOC_USER_GFP 0
 #endif
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 struct colinux_revmap_t *page_revmap;
 unsigned long page_revmap_size;
 
@@ -26,7 +26,11 @@ unsigned long colinux_real_v2p(unsigned long pte)
     unsigned long pml3_e;
     unsigned long pml2_e;
     unsigned long pt_e, pt_map_e;
-    pte += __PAGE_OFFSET;
+	if (pte > __START_KERNEL_map)
+		pte -= __START_KERNEL_map;
+	if (pte < __PAGE_OFFSET)
+		pte += __PAGE_OFFSET;
+	
     pml4_e = (pte >> (PAGE_SHIFT + (9 * 3))) & 0x1ff;
     pml3_e = (pte >> (PAGE_SHIFT + (9 * 2))) & 0x1ff;
     pml2_e = (pte >> (PAGE_SHIFT + 9)) & 0x1ff;
@@ -46,7 +50,7 @@ unsigned long colinux_real_v2p(unsigned long pte)
         panic("pmd[%ld] is not present\n", pml2_e);
     map = (unsigned long *)colinux_real_p2v(pt & ~(PAGE_SIZE - 1));
     entry = map[pt_e];
-    entry = (entry & ~(PAGE_SIZE - 1)) | (pte & (PAGE_SIZE - 1)) | _PAGE_REALPHYS;
+    entry = (entry & ~(PAGE_SIZE - 1)) | (pte & (PAGE_SIZE - 1));
     return entry;
 }
 
@@ -62,6 +66,9 @@ unsigned long colinux_real_p2v(unsigned long pte)
         } else {
             low = mid;
         }
+		if (high == low) {
+			panic("Could not find physical page %lx\n", pte);
+		}
         mid = (high + low) / 2;
     }
     return (unsigned long)page_revmap[mid].virt | (pte & (PAGE_SIZE - 1));

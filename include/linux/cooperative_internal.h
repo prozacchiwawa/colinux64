@@ -13,7 +13,15 @@
 #include <linux/list.h>
 #include <asm/ptrace.h>
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifndef NORET_TYPE
+#define NORET_TYPE
+#endif
+
+#ifndef ATTRIB_NORET
+#define ATTRIB_NORET
+#endif
+
+#ifdef CONFIG_COOPERATIVE
 
 #define ENABLE_PASSAGE_HOLDING_CHECK
 

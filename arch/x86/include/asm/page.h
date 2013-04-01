@@ -37,12 +37,14 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
 #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 #define __pa(x)		__phys_addr((unsigned long)(x))
 #define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
 #else
 #define __pa(x)         colinux_real_v2p(((unsigned long)(x)))
 #define __pa_nodebug(x) __pa(x)
+#define __pa_symbol(x) \
+	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
 #endif
 /* __pa_symbol should be used for C visible symbols.
    This seems to be the official gcc blessed way to do such arithmetic. */
@@ -53,10 +55,8 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
  * case properly. Once all supported versions of gcc understand it, we can
  * remove this Voodoo magic stuff. (i.e. once gcc3.x is deprecated)
  */
-#define __pa_symbol(x) \
-	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 extern unsigned long colinux_real_p2v(unsigned long pa);
 extern unsigned long colinux_real_v2p(unsigned long va);
 #define __va(x)         ((void *)(colinux_real_p2v(x)))

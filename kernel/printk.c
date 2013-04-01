@@ -49,6 +49,11 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/printk.h>
 
+#ifdef CONFIG_COOPERATIVE
+#include <linux/cooperative.h>
+#include <linux/cooperative_internal.h>
+#endif
+
 /*
  * Architectures can override it:
  */
@@ -1553,6 +1558,22 @@ asmlinkage int vprintk_emit(int facility, int level,
 		text_len--;
 		lflags |= LOG_NEWLINE;
 	}
+
+#ifdef CONFIG_COOPERATIVE
+	{
+		unsigned long co_flags;
+		co_message_t *co_message = (co_message_t*)co_send_message_save(&co_flags);
+		if (co_message) {
+			co_passage_page->operation = CO_OPERATION_DEBUG_LINE;
+			co_message->type = CO_MESSAGE_TYPE_STRING;
+			co_message->from = CO_MODULE_LINUX;
+			co_message->to = CO_MODULE_MONITOR;
+			co_message->priority = CO_PRIORITY_DISCARDABLE;
+			memcpy(&co_passage_page->params[1], text, text_len+1);
+			co_send_message_restore(co_flags);
+		}
+	}
+#endif
 
 	/* strip kernel syslog prefix and extract log level or control flags */
 	if (facility == 0) {

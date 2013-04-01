@@ -2,6 +2,8 @@
 #include <linux/irqflags.h>
 #include <linux/cooperative.h>
 
+long co_passage_page_holding_count;
+
 static inline void co_passage_page_ref_up(void)
 {
 #ifdef ENABLE_PASSAGE_HOLDING_CHECK
@@ -64,16 +66,20 @@ static void co_switch_wrapper_protected(void)
   }
 
   /* And switch... */
-  __asm__("mov %0, %%rcx\n"
+  // Assume registers we modify in there and in our argument passing
+  // convention are non-volatile.  I'll optimize later.
+  __asm__("pushq %%rbx\n"
+		  "mov %0, %%rcx\n"
 		  "mov %1, %%rdx\n"
 		  "mov %2, %%r8\n"
 		  "callq *%%rcx\n"
+		  "popq %%rbx\n"
 		  : 
 		  : 
 		  "r"(co_passage_page->code),
 		  "r"(&co_passage_page->linuxvm_state),
 		  "r"(&co_passage_page->host_state)
-		  : "%rcx", "%rdx", "%r8");
+		  : "%rsi", "%rdi", "%rcx", "%rdx", "%r8");
 }
 
 #define THREAD_SIZE 8192

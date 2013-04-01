@@ -24,7 +24,7 @@
 #include <linux/nmi.h>
 #include <linux/dmi.h>
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 void co_terminate_panic(const char *text, int len);
 #endif
 
@@ -133,7 +133,7 @@ void panic(const char *fmt, ...)
 
 	bust_spinlocks(0);
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 	co_terminate_panic(buf, strlen(buf));
 #endif
 

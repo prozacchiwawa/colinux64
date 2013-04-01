@@ -27,7 +27,7 @@
 #include <asm/bios_ebda.h>
 #include <asm/bootparam_utils.h>
 #include <asm/microcode.h>
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 #include <linux/cooperative.h>
 
 co_info_t co_info = { 
@@ -49,7 +49,7 @@ extern void colinux_fake_head(char *real_mode_data);
 extern pgd_t early_level4_pgt[PTRS_PER_PGD];
 extern pmd_t early_dynamic_pgts[EARLY_DYNAMIC_PAGE_TABLES][PTRS_PER_PMD];
 static unsigned int __initdata next_early_pgt = 2;
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 co_arch_passage_page_t *co_passage_page;
 #endif
 
@@ -177,14 +177,14 @@ void __init x86_64_start_kernel(char * real_mode_data)
 #endif
 
 	/* Kill off the identity-map trampoline */
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	reset_early_page_tables();
 #endif
 
 	/* clear bss before set_intr_gate with early_idt_handler */
 	clear_bss();
 
-#ifdef CONFIG_COLINUX_KERNEL
+#ifdef CONFIG_COOPERATIVE
 	co_boot_params_t *co_boot_params = (co_boot_params_t*)real_mode_data;
 	co_passage_page = 
 		(co_arch_passage_page_t*)co_boot_params->co_passage_page_vaddr;
@@ -207,7 +207,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
 	if (console_loglevel == 10)
 		early_printk("Kernel alive\n");
 
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	clear_page(init_level4_pgt);
 	/* set init_level4_pgt kernel high mapping*/
 	init_level4_pgt[511] = early_level4_pgt[511];
@@ -218,7 +218,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
 
 void __init x86_64_start_reservations(char *real_mode_data)
 {
-#ifndef CONFIG_COLINUX_KERNEL
+#ifndef CONFIG_COOPERATIVE
 	/* version is always not zero if it is copied */
 	if (!boot_params.hdr.version)
 		copy_bootdata(__va(real_mode_data));
