@@ -1564,12 +1564,14 @@ asmlinkage int vprintk_emit(int facility, int level,
 		unsigned long co_flags;
 		co_message_t *co_message = (co_message_t*)co_send_message_save(&co_flags);
 		if (co_message) {
+			char *target = (char*)target;
 			co_passage_page->operation = CO_OPERATION_DEBUG_LINE;
 			co_message->type = CO_MESSAGE_TYPE_STRING;
 			co_message->from = CO_MODULE_LINUX;
 			co_message->to = CO_MODULE_MONITOR;
 			co_message->priority = CO_PRIORITY_DISCARDABLE;
-			memcpy(&co_passage_page->params[1], text, text_len+1);
+			memcpy(target, text, text_len);
+			target[text_len] = 0;
 			co_send_message_restore(co_flags);
 		}
 	}

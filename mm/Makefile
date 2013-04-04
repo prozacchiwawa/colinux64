@@ -21,10 +21,14 @@ obj-y			:= filemap.o mempool.o oom_kill.o fadvise.o \
 
 obj-y += init-mm.o
 
+ifeq ($(CONFIG_COOPERATIVE),y)
+obj-y += cobootmem.o
+else
 ifdef CONFIG_NO_BOOTMEM
 	obj-y		+= nobootmem.o
 else
 	obj-y		+= bootmem.o
+endif
 endif
 
 obj-$(CONFIG_HAVE_MEMBLOCK) += memblock.o
