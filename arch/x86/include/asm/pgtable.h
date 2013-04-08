@@ -451,7 +451,12 @@ static inline int pmd_none(pmd_t pmd)
 
 static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 {
+#ifdef CONFIG_COOPERATIVE
+    unsigned long val = (unsigned long)pmd_val(pmd);
+    return colinux_real_p2v(val);
+#else
 	return (unsigned long)__va(pmd_val(pmd) & PTE_PFN_MASK);
+#endif
 }
 
 /*
@@ -527,7 +532,12 @@ static inline int pud_present(pud_t pud)
 
 static inline unsigned long pud_page_vaddr(pud_t pud)
 {
+#ifdef CONFIG_COOPERATIVE
+    unsigned long val = (unsigned long)pud_val(pud);
+    return colinux_real_p2v(val);
+#else
 	return (unsigned long)__va((unsigned long)pud_val(pud) & PTE_PFN_MASK);
+#endif
 }
 
 /*
@@ -567,7 +577,12 @@ static inline int pgd_present(pgd_t pgd)
 
 static inline unsigned long pgd_page_vaddr(pgd_t pgd)
 {
+#ifdef CONFIG_COOPERATIVE
+    unsigned long val = (unsigned long)pgd_val(pgd);
+    return colinux_real_p2v(val);
+#else
 	return (unsigned long)__va((unsigned long)pgd_val(pgd) & PTE_PFN_MASK);
+#endif
 }
 
 /*

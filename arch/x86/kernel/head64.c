@@ -185,12 +185,43 @@ void __init x86_64_start_kernel(char * real_mode_data)
 	clear_bss();
 
 #ifdef CONFIG_COOPERATIVE
-	co_boot_params_t *co_boot_params = (co_boot_params_t*)real_mode_data;
-	co_passage_page = 
-		(co_arch_passage_page_t*)co_boot_params->co_passage_page_vaddr;
-	real_mode_data = co_boot_params->co_real_mode_data;
-	page_revmap = co_boot_params->co_revmap;
-	page_revmap_size = co_boot_params->co_memory_size >> PAGE_SHIFT;
+    {
+        pud_t *level3_kern_pgt;
+        pmd_t *level2_kern_pgt;
+        co_boot_params_t *co_boot_params = (co_boot_params_t*)real_mode_data;
+
+        pgd_t l3kp;
+        pud_t l2kp, l2fp;
+
+        co_passage_page = 
+            (co_arch_passage_page_t*)co_boot_params->co_passage_page_vaddr;
+        real_mode_data = (char*)co_boot_params->co_real_mode_data;
+        page_revmap = (void*)co_boot_params->co_revmap;
+        page_revmap_size = co_boot_params->co_memory_size >> PAGE_SHIFT;
+        
+        /* Move the page tables into the predetermined areas in kernel space */
+        level3_kern_pgt =
+            (pud_t*)(colinux_real_p2v(init_level4_pgt[511].pgd) & ~(PAGE_SIZE - 1));
+        level2_kern_pgt =
+            (pmd_t*)(colinux_real_p2v(level3_kern_pgt[510].pud) & ~(PAGE_SIZE - 1));
+
+        memcpy(level3_kernel_pgt, level3_kern_pgt, PAGE_SIZE);
+        memcpy(level2_kernel_pgt, level2_kern_pgt, PAGE_SIZE);
+
+        /* Reset the page tables to include the fixmap. */
+        l2kp.pud = 
+            colinux_real_v2p((unsigned long)level2_kernel_pgt) | 
+            _KERNPG_TABLE | _PAGE_REALPHYS;
+        l2fp.pud =
+            colinux_real_v2p((unsigned long)level2_fixmap_pgt) | 
+            _KERNPG_TABLE | _PAGE_REALPHYS;
+        l3kp.pgd =
+             colinux_real_v2p((unsigned long)level3_kernel_pgt) |
+            _KERNPG_TABLE | _PAGE_REALPHYS;
+        native_set_pud(&level3_kernel_pgt[510], l2kp);
+        native_set_pud(&level3_kernel_pgt[511], l2fp);
+        native_set_pgd(&init_level4_pgt[511], l3kp);
+    }
 #endif
 
 	for (i = 0; i < NUM_EXCEPTION_VECTORS; i++)

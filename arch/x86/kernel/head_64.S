@@ -324,6 +324,11 @@ bad_address:
 	__INIT
 	.globl early_idt_handlers
 early_idt_handlers:
+#ifdef CONFIG_COOPERATIVE
+	push 0
+	push 0
+	call co_terminate_panic(%rip)
+#endif
 	# 104(%rsp) %rflags
 	#  96(%rsp) %cs
 	#  88(%rsp) %rip

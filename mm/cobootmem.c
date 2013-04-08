@@ -1,9 +1,7 @@
 /*
- *  bootmem - A boot-time physical memory allocator and configurator
+ *  cobootmem - A boot-time memory allocator and configurator for colinux
  *
- *  Copyright (C) 1999 Ingo Molnar
- *                1999 Kanoj Sarcar, SGI
- *                2008 Johannes Weiner
+ *  Copyright (C) 2013 Art Yerkes
  *
  * Access to this subsystem has to be serialized externally (which is true
  * for the boot process anyway).

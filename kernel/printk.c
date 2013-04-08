@@ -1564,7 +1564,7 @@ asmlinkage int vprintk_emit(int facility, int level,
 		unsigned long co_flags;
 		co_message_t *co_message = (co_message_t*)co_send_message_save(&co_flags);
 		if (co_message) {
-			char *target = (char*)target;
+			char *target = (char*)&co_passage_page->params[1];
 			co_passage_page->operation = CO_OPERATION_DEBUG_LINE;
 			co_message->type = CO_MESSAGE_TYPE_STRING;
 			co_message->from = CO_MODULE_LINUX;

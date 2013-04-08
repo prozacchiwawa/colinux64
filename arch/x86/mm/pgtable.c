@@ -73,6 +73,14 @@ unsigned long colinux_real_p2v(unsigned long pte)
     }
     return (unsigned long)page_revmap[mid].virt | (pte & (PAGE_SIZE - 1));
 }
+
+unsigned long colinux_fake_p2v(unsigned long pte)
+{
+    if (pte > __PAGE_OFFSET)
+        return pte - __PAGE_OFFSET;
+    else
+        return pte;
+}
 #endif
 
 gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;

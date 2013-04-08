@@ -203,7 +203,14 @@ static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
 
 static inline void load_cr3(pgd_t *pgdir)
 {
+#ifdef CONFIG_COOPERATIVE
+    unsigned long colinux_real_v2p(unsigned long v);
+    void *pgdir_phys = (void*)colinux_real_v2p((unsigned long)pgdir);
+    printk("Writing CR3: virt %p phys %p\n", pgdir, pgdir_phys);
+    write_cr3(colinux_real_v2p((unsigned long)pgdir));
+#else
 	write_cr3(__pa(pgdir));
+#endif
 }
 
 #ifdef CONFIG_X86_32

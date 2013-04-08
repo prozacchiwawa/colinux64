@@ -41,7 +41,10 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 #define __pa(x)		__phys_addr((unsigned long)(x))
 #define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
 #else
-#define __pa(x)         colinux_real_v2p(((unsigned long)(x)))
+extern unsigned long colinux_real_p2v(unsigned long pa);
+extern unsigned long colinux_real_v2p(unsigned long va);
+extern unsigned long colinux_fake_p2v(unsigned long pa);
+#define __pa(x) (colinux_fake_p2v((unsigned long)(x)))
 #define __pa_nodebug(x) __pa(x)
 #define __pa_symbol(x) \
 	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
@@ -56,13 +59,7 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
  * remove this Voodoo magic stuff. (i.e. once gcc3.x is deprecated)
  */
 
-#ifdef CONFIG_COOPERATIVE
-extern unsigned long colinux_real_p2v(unsigned long pa);
-extern unsigned long colinux_real_v2p(unsigned long va);
-#define __va(x)         ((void *)(colinux_real_p2v(x)))
-#else
 #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
-#endif
 
 #define __boot_va(x)		__va(x)
 #define __boot_pa(x)		__pa(x)
