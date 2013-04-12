@@ -13,6 +13,7 @@
 #include <asm/page_32.h>
 #endif	/* CONFIG_X86_64 */
 
+#ifndef CONFIG_COOPERATIVE
 #ifndef __ASSEMBLY__
 
 struct page;
@@ -37,18 +38,8 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
 #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
 
-#ifndef CONFIG_COOPERATIVE
 #define __pa(x)		__phys_addr((unsigned long)(x))
 #define __pa_nodebug(x)	__phys_addr_nodebug((unsigned long)(x))
-#else
-extern unsigned long colinux_real_p2v(unsigned long pa);
-extern unsigned long colinux_real_v2p(unsigned long va);
-extern unsigned long colinux_fake_p2v(unsigned long pa);
-#define __pa(x) (colinux_fake_p2v((unsigned long)(x)))
-#define __pa_nodebug(x) __pa(x)
-#define __pa_symbol(x) \
-	__phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
-#endif
 /* __pa_symbol should be used for C visible symbols.
    This seems to be the official gcc blessed way to do such arithmetic. */
 /*
@@ -58,6 +49,8 @@ extern unsigned long colinux_fake_p2v(unsigned long pa);
  * case properly. Once all supported versions of gcc understand it, we can
  * remove this Voodoo magic stuff. (i.e. once gcc3.x is deprecated)
  */
+#define __pa_symbol(x) \
+    __phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
 
 #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
 
@@ -74,6 +67,66 @@ extern bool __virt_addr_valid(unsigned long kaddr);
 #define virt_addr_valid(kaddr)	__virt_addr_valid((unsigned long) (kaddr))
 
 #endif	/* __ASSEMBLY__ */
+#else /* COOPERATIVE */
+#ifndef __ASSEMBLY__
+
+extern unsigned long colinux_fake_v2p(unsigned long x);
+extern unsigned long colinux_fake_p2v(unsigned long x);
+extern unsigned long colinux_real_v2p(unsigned long x);
+extern unsigned long colinux_real_p2v(unsigned long x);
+
+struct page;
+
+#include <linux/range.h>
+extern struct range pfn_mapped[];
+extern int nr_pfn_mapped;
+
+static inline void clear_user_page(void *page, unsigned long vaddr,
+				   struct page *pg)
+{
+	clear_page(page);
+}
+
+static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
+				  struct page *topage)
+{
+	copy_page(to, from);
+}
+
+#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+
+#define __pa(x)		(colinux_fake_v2p((unsigned long)x))
+#define __pa_nodebug(x)	(colinux_fake_v2p((unsigned long)x))
+/* __pa_symbol should be used for C visible symbols.
+   This seems to be the official gcc blessed way to do such arithmetic. */
+/*
+ * We need __phys_reloc_hide() here because gcc may assume that there is no
+ * overflow during __pa() calculation and can optimize it unexpectedly.
+ * Newer versions of gcc provide -fno-strict-overflow switch to handle this
+ * case properly. Once all supported versions of gcc understand it, we can
+ * remove this Voodoo magic stuff. (i.e. once gcc3.x is deprecated)
+ */
+#define __pa_symbol(x) \
+    __phys_addr_symbol(__phys_reloc_hide((unsigned long)(x)))
+
+#define __va(x)			((void *)colinux_fake_p2v((unsigned long)x))
+
+#define __boot_va(x)		__va(x)
+#define __boot_pa(x)		__pa(x)
+
+/*
+ * virt_to_page(kaddr) returns a valid pointer if and only if
+ * virt_addr_valid(kaddr) returns true.
+ */
+#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+#define pfn_to_kaddr(pfn)      __va((pfn) << PAGE_SHIFT)
+extern bool __virt_addr_valid(unsigned long kaddr);
+#define virt_addr_valid(kaddr)	__virt_addr_valid((unsigned long) (kaddr))
+
+#endif	/* __ASSEMBLY__ */
+#endif /* COOPERATIVE */
 
 #include <asm-generic/memory_model.h>
 #include <asm-generic/getorder.h>

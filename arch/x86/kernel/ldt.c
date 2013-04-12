@@ -75,6 +75,7 @@ static int alloc_ldt(mm_context_t *pc, int mincount, int reload)
 		load_LDT(pc);
 #endif
 	}
+#ifndef CONFIG_COOPERATIVE
 	if (oldsize) {
 		paravirt_free_ldt(oldldt, oldsize);
 		if (oldsize * LDT_ENTRY_SIZE > PAGE_SIZE)
@@ -82,6 +83,7 @@ static int alloc_ldt(mm_context_t *pc, int mincount, int reload)
 		else
 			put_page(virt_to_page(oldldt));
 	}
+#endif
 	return 0;
 }
 
@@ -132,11 +134,13 @@ void destroy_context(struct mm_struct *mm)
 			clear_LDT();
 #endif
 		paravirt_free_ldt(mm->context.ldt, mm->context.size);
+#ifndef CONFIG_COOPERATIVE
 		if (mm->context.size * LDT_ENTRY_SIZE > PAGE_SIZE)
 			vfree(mm->context.ldt);
 		else
 			put_page(virt_to_page(mm->context.ldt));
 		mm->context.size = 0;
+#endif
 	}
 }
 

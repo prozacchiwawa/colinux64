@@ -13,16 +13,18 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
 					      struct dma_attrs *attrs)
 {
 	struct dma_map_ops *ops = get_dma_ops(dev);
-	dma_addr_t addr;
+	dma_addr_t addr = 0;
 
 	kmemcheck_mark_initialized(ptr, size);
 	BUG_ON(!valid_dma_direction(dir));
+#ifndef CONFIG_COOPERATIVE
 	addr = ops->map_page(dev, virt_to_page(ptr),
 			     (unsigned long)ptr & ~PAGE_MASK, size,
 			     dir, attrs);
 	debug_dma_map_page(dev, virt_to_page(ptr),
 			   (unsigned long)ptr & ~PAGE_MASK, size,
 			   dir, addr, true);
+#endif
 	return addr;
 }
 

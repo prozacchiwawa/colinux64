@@ -453,7 +453,7 @@ static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 {
 #ifdef CONFIG_COOPERATIVE
     unsigned long val = (unsigned long)pmd_val(pmd);
-    return colinux_real_p2v(val);
+    return colinux_real_p2v(val) & ~(PAGE_SIZE - 1);
 #else
 	return (unsigned long)__va(pmd_val(pmd) & PTE_PFN_MASK);
 #endif
@@ -534,7 +534,7 @@ static inline unsigned long pud_page_vaddr(pud_t pud)
 {
 #ifdef CONFIG_COOPERATIVE
     unsigned long val = (unsigned long)pud_val(pud);
-    return colinux_real_p2v(val);
+    return colinux_real_p2v(val) & ~(PAGE_SIZE - 1);
 #else
 	return (unsigned long)__va((unsigned long)pud_val(pud) & PTE_PFN_MASK);
 #endif
@@ -579,7 +579,7 @@ static inline unsigned long pgd_page_vaddr(pgd_t pgd)
 {
 #ifdef CONFIG_COOPERATIVE
     unsigned long val = (unsigned long)pgd_val(pgd);
-    return colinux_real_p2v(val);
+    return colinux_real_p2v(val) & ~(PAGE_SIZE - 1);
 #else
 	return (unsigned long)__va((unsigned long)pgd_val(pgd) & PTE_PFN_MASK);
 #endif

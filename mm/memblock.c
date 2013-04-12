@@ -119,11 +119,7 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t start,
 
 		cand = round_down(this_end - size, align);
 		if (cand >= this_start)
-#ifdef CONFIG_COOPERATIVE
-			return __pa(__PAGE_OFFSET + cand);
-#else
 			return cand;
-#endif
 	}
 	return 0;
 }

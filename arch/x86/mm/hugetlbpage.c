@@ -16,6 +16,7 @@
 #include <asm/tlbflush.h>
 #include <asm/pgalloc.h>
 
+#ifndef CONFIG_COOPERATIVE
 static unsigned long page_table_shareable(struct vm_area_struct *svma,
 				struct vm_area_struct *vma,
 				unsigned long addr, pgoff_t idx)
@@ -370,4 +371,5 @@ static __init int setup_hugepagesz(char *opt)
 	return 1;
 }
 __setup("hugepagesz=", setup_hugepagesz);
+#endif
 #endif

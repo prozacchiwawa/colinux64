@@ -64,22 +64,34 @@ unsigned long colinux_real_p2v(unsigned long pte)
         if (page_revmap[mid].phys > ptecopy) {
             high = mid;
         } else {
-            low = mid;
+            low = mid + 1;
         }
+        mid = (high + low) / 2;
 		if (high == low) {
 			panic("Could not find physical page %lx\n", pte);
 		}
-        mid = (high + low) / 2;
     }
     return (unsigned long)page_revmap[mid].virt | (pte & (PAGE_SIZE - 1));
 }
 
-unsigned long colinux_fake_p2v(unsigned long pte)
+unsigned long colinux_fake_v2p(unsigned long pte)
 {
-    if (pte > __PAGE_OFFSET)
+    if (pte > __START_KERNEL_map)
+        return pte - __START_KERNEL_map;
+    else if (pte > __PAGE_OFFSET)
         return pte - __PAGE_OFFSET;
     else
         return pte;
+}
+
+unsigned long colinux_fake_p2v(unsigned long pte)
+{
+    if (pte >= __START_KERNEL_map)
+        pte -= __START_KERNEL_map;
+    if (pte >= __PAGE_OFFSET)
+        pte -= __PAGE_OFFSET;
+
+    return pte + __PAGE_OFFSET;
 }
 #endif
 

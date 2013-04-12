@@ -224,12 +224,19 @@ typedef struct { pgdval_t pgd; } pgd_t;
 
 static inline pgd_t native_make_pgd(pgdval_t val)
 {
+#ifdef CONFIG_COOPERATIVE
+    val = colinux_real_v2p(val + __PAGE_OFFSET) | _PAGE_REALPHYS;
+#endif
 	return (pgd_t) { val };
 }
 
 static inline pgdval_t native_pgd_val(pgd_t pgd)
 {
+#ifdef CONFIG_COOPERATIVE
+    return colinux_real_p2v(pgd.pgd) - __PAGE_OFFSET;
+#else
 	return pgd.pgd;
+#endif
 }
 
 static inline pgdval_t pgd_flags(pgd_t pgd)
@@ -242,6 +249,9 @@ typedef struct { pudval_t pud; } pud_t;
 
 static inline pud_t native_make_pud(pmdval_t val)
 {
+#ifdef CONFIG_COOPERATIVE
+    val = colinux_real_v2p(val + __PAGE_OFFSET) | _PAGE_REALPHYS;
+#endif
 	return (pud_t) { val };
 }
 
@@ -263,12 +273,19 @@ typedef struct { pmdval_t pmd; } pmd_t;
 
 static inline pmd_t native_make_pmd(pmdval_t val)
 {
+#ifdef CONFIG_COOPERATIVE
+    val = colinux_real_v2p(val + __PAGE_OFFSET) | _PAGE_REALPHYS;
+#endif
 	return (pmd_t) { val };
 }
 
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
+#ifdef CONFIG_COOPERATIVE
+    return colinux_real_p2v(pmd.pmd) - __PAGE_OFFSET;
+#else
 	return pmd.pmd;
+#endif
 }
 #else
 #include <asm-generic/pgtable-nopmd.h>
@@ -291,12 +308,19 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
 
 static inline pte_t native_make_pte(pteval_t val)
 {
+#ifdef CONFIG_COOPERATIVE
+    val = colinux_real_v2p(val + __PAGE_OFFSET);
+#endif
 	return (pte_t) { .pte = val };
 }
 
 static inline pteval_t native_pte_val(pte_t pte)
 {
+#ifdef CONFIG_COOPERATIVE
+    return colinux_real_p2v(pte.pte) - __PAGE_OFFSET;
+#else
 	return pte.pte;
+#endif
 }
 
 static inline pteval_t pte_flags(pte_t pte)

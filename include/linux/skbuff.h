@@ -2090,8 +2090,12 @@ static inline dma_addr_t skb_frag_dma_map(struct device *dev,
 					  size_t offset, size_t size,
 					  enum dma_data_direction dir)
 {
+#ifndef CONFIG_COOPERATIVE
 	return dma_map_page(dev, skb_frag_page(frag),
 			    frag->page_offset + offset, size, dir);
+#else
+    return 0;
+#endif
 }
 
 static inline struct sk_buff *pskb_copy(struct sk_buff *skb,

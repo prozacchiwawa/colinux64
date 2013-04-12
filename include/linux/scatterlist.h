@@ -111,7 +111,9 @@ static inline struct page *sg_page(struct scatterlist *sg)
 static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
 			      unsigned int buflen)
 {
+#ifndef CONFIG_COOPERATIVE
 	sg_set_page(sg, virt_to_page(buf), buflen, offset_in_page(buf));
+#endif
 }
 
 /*

@@ -542,6 +542,7 @@ out_unlock:
 	return do_split;
 }
 
+#ifndef CONFIG_COOPERATIVE
 int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase)
 {
 	unsigned long pfn, pfninc = 1;
@@ -650,6 +651,7 @@ static int split_large_page(pte_t *kpte, unsigned long address)
 
 	return 0;
 }
+#endif
 
 static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr,
 			       int primary)
@@ -762,6 +764,9 @@ repeat:
 	/*
 	 * We have to split the large page:
 	 */
+#ifdef CONFIG_COOPERATIVE
+    panic("We never have large pages in cooperative mode");
+#else
 	err = split_large_page(kpte, address);
 	if (!err) {
 		/*
@@ -785,6 +790,7 @@ repeat:
 		flush_tlb_all();
 		goto repeat;
 	}
+#endif
 
 	return err;
 }
