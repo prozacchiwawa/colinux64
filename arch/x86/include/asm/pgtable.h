@@ -315,12 +315,40 @@ static inline pgprotval_t massage_pgprot(pgprot_t pgprot)
 
 static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
 {
+#ifdef CONFIG_COOPERATIVE
+    pte_t p;
+    unsigned long orig = page_nr;
+    unsigned long fake_p2v;
+    if (page_nr > 1 * 1024 * 1024)
+        panic("Page nr impossibly large %lx\n", page_nr);
+    fake_p2v = colinux_fake_p2v(page_nr << PAGE_SHIFT);
+    printk("pfn_pte - page_nr %lx pgprot %lx fake_p2v %lx\n", page_nr, pgprot, fake_p2v);
+    page_nr = colinux_real_v2p(fake_p2v) >> PAGE_SHIFT;
+    printk("pfn_pte - fake_phys %lx real_phys %lx\n", orig, page_nr);
+    p.pte = (page_nr << PAGE_SHIFT) | massage_pgprot(pgprot) | _PAGE_REALPHYS;
+    printk("pfn_pte - pte %lx prot %lx\n", p.pte, massage_pgprot(pgprot));
+    return p;
+#endif
 	return __pte(((phys_addr_t)page_nr << PAGE_SHIFT) |
 		     massage_pgprot(pgprot));
 }
 
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
 {
+#ifdef CONFIG_COOPERATIVE
+    pmd_t p;
+    unsigned long orig = page_nr;
+    unsigned long fake_p2v;
+    if (page_nr > 1 * 1024 * 1024)
+        panic("Page nr impossibly large %lx\n", page_nr);
+    fake_p2v = colinux_fake_p2v(page_nr << PAGE_SHIFT);
+    printk("pfn_pmd - page_nr %lx pgprot %lx fake_p2v %lx\n", page_nr, pgprot, fake_p2v);
+    page_nr = colinux_real_v2p(fake_p2v) >> PAGE_SHIFT;
+    printk("pfn_pmd - fake_phys %lx real_phys %lx\n", orig, page_nr);
+    p.pmd = (page_nr << PAGE_SHIFT) | massage_pgprot(pgprot) | _PAGE_REALPHYS;
+    printk("pfn_pmd - pmd %lx prot %lx\n", p.pmd, massage_pgprot(pgprot));
+    return p;
+#endif
 	return __pmd(((phys_addr_t)page_nr << PAGE_SHIFT) |
 		     massage_pgprot(pgprot));
 }
@@ -451,12 +479,7 @@ static inline int pmd_none(pmd_t pmd)
 
 static inline unsigned long pmd_page_vaddr(pmd_t pmd)
 {
-#ifdef CONFIG_COOPERATIVE
-    unsigned long val = (unsigned long)pmd_val(pmd);
-    return colinux_real_p2v(val) & ~(PAGE_SIZE - 1);
-#else
 	return (unsigned long)__va(pmd_val(pmd) & PTE_PFN_MASK);
-#endif
 }
 
 /*
@@ -532,12 +555,7 @@ static inline int pud_present(pud_t pud)
 
 static inline unsigned long pud_page_vaddr(pud_t pud)
 {
-#ifdef CONFIG_COOPERATIVE
-    unsigned long val = (unsigned long)pud_val(pud);
-    return colinux_real_p2v(val) & ~(PAGE_SIZE - 1);
-#else
 	return (unsigned long)__va((unsigned long)pud_val(pud) & PTE_PFN_MASK);
-#endif
 }
 
 /*
@@ -577,12 +595,7 @@ static inline int pgd_present(pgd_t pgd)
 
 static inline unsigned long pgd_page_vaddr(pgd_t pgd)
 {
-#ifdef CONFIG_COOPERATIVE
-    unsigned long val = (unsigned long)pgd_val(pgd);
-    return colinux_real_p2v(val) & ~(PAGE_SIZE - 1);
-#else
 	return (unsigned long)__va((unsigned long)pgd_val(pgd) & PTE_PFN_MASK);
-#endif
 }
 
 /*

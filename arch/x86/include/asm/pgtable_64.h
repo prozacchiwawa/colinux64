@@ -19,6 +19,7 @@ extern pud_t level3_ident_pgt[512];
 extern pmd_t level2_kernel_pgt[512];
 extern pmd_t level2_fixmap_pgt[512];
 extern pmd_t level2_ident_pgt[512];
+extern pte_t level1_fixmap_pgt[512];
 extern pgd_t init_level4_pgt[];
 
 #define swapper_pg_dir init_level4_pgt
@@ -98,6 +99,7 @@ static inline void native_pmd_clear(pmd_t *pmd)
 
 static inline pte_t native_ptep_get_and_clear(pte_t *xp)
 {
+#ifndef CONFIG_COOPERATIVE
 #ifdef CONFIG_SMP
 	return native_make_pte(xchg(&xp->pte, 0));
 #else
@@ -107,10 +109,16 @@ static inline pte_t native_ptep_get_and_clear(pte_t *xp)
 	native_pte_clear(NULL, 0, xp);
 	return ret;
 #endif
+#else
+    pte_t res = native_make_pte(xchg(&xp->pte, 0));
+    res.pte = colinux_real_p2v(res.pte);
+    return res;
+#endif
 }
 
 static inline pmd_t native_pmdp_get_and_clear(pmd_t *xp)
 {
+#ifndef CONFIG_COOPERATIVE
 #ifdef CONFIG_SMP
 	return native_make_pmd(xchg(&xp->pmd, 0));
 #else
@@ -119,6 +127,11 @@ static inline pmd_t native_pmdp_get_and_clear(pmd_t *xp)
 	pmd_t ret = *xp;
 	native_pmd_clear(xp);
 	return ret;
+#endif
+#else
+    pmd_t res = native_make_pmd(xchg(&xp->pmd, 0));
+    res.pmd = colinux_real_p2v(res.pmd);
+    return res;
 #endif
 }
 

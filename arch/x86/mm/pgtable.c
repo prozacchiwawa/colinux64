@@ -57,9 +57,11 @@ unsigned long colinux_real_v2p(unsigned long pte)
 unsigned long colinux_real_p2v(unsigned long pte)
 {
     int low = 0, high = page_revmap_size, mid = high / 2;
-    unsigned long ptecopy = pte & ~(PAGE_SIZE - 1);
+    unsigned long ptecopy = pte & ~(PAGE_SIZE - 1) & ((1ull << 48ull) - 1);
     if (ptecopy > __PAGE_OFFSET)
         ptecopy -= __PAGE_OFFSET;
+    if (ptecopy == 0)
+        panic("Null physical address\n");
     while (page_revmap[mid].phys != ptecopy) {
         if (page_revmap[mid].phys > ptecopy) {
             high = mid;

@@ -192,6 +192,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
 
         pgd_t l3kp;
         pud_t l2kp, l2fp;
+        pmd_t l1fp;
 
         co_passage_page = 
             (co_arch_passage_page_t*)co_boot_params->co_passage_page_vaddr;
@@ -208,7 +209,12 @@ void __init x86_64_start_kernel(char * real_mode_data)
         memcpy(level3_kernel_pgt, level3_kern_pgt, PAGE_SIZE);
         memcpy(level2_kernel_pgt, level2_kern_pgt, PAGE_SIZE);
 
+        memset(level2_fixmap_pgt, 0, sizeof(PAGE_SIZE));
+
         /* Reset the page tables to include the fixmap. */
+        l1fp.pmd = 
+            colinux_real_v2p((unsigned long)level1_fixmap_pgt) |
+            _KERNPG_TABLE | _PAGE_REALPHYS;
         l2kp.pud = 
             colinux_real_v2p((unsigned long)level2_kernel_pgt) | 
             _KERNPG_TABLE | _PAGE_REALPHYS;
@@ -216,8 +222,10 @@ void __init x86_64_start_kernel(char * real_mode_data)
             colinux_real_v2p((unsigned long)level2_fixmap_pgt) | 
             _KERNPG_TABLE | _PAGE_REALPHYS;
         l3kp.pgd =
-             colinux_real_v2p((unsigned long)level3_kernel_pgt) |
+            colinux_real_v2p((unsigned long)level3_kernel_pgt) |
             _KERNPG_TABLE | _PAGE_REALPHYS;
+
+        native_set_pmd(&level2_fixmap_pgt[507], l1fp);
         native_set_pud(&level3_kernel_pgt[510], l2kp);
         native_set_pud(&level3_kernel_pgt[511], l2fp);
         native_set_pgd(&init_level4_pgt[511], l3kp);

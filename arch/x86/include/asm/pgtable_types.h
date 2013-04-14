@@ -257,7 +257,11 @@ static inline pud_t native_make_pud(pmdval_t val)
 
 static inline pudval_t native_pud_val(pud_t pud)
 {
+#ifdef CONFIG_COOPERATIVE
+    return colinux_real_p2v(pud.pud) - __PAGE_OFFSET;
+#else
 	return pud.pud;
+#endif
 }
 #else
 #include <asm-generic/pgtable-nopud.h>
@@ -309,7 +313,7 @@ static inline pmdval_t pmd_flags(pmd_t pmd)
 static inline pte_t native_make_pte(pteval_t val)
 {
 #ifdef CONFIG_COOPERATIVE
-    val = colinux_real_v2p(val + __PAGE_OFFSET);
+    val = colinux_real_v2p(val + __PAGE_OFFSET) | _PAGE_REALPHYS;
 #endif
 	return (pte_t) { .pte = val };
 }
