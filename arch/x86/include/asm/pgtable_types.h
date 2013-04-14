@@ -233,7 +233,7 @@ static inline pgd_t native_make_pgd(pgdval_t val)
 static inline pgdval_t native_pgd_val(pgd_t pgd)
 {
 #ifdef CONFIG_COOPERATIVE
-    return colinux_real_p2v(pgd.pgd) - __PAGE_OFFSET;
+    return pgd.pgd ? colinux_real_p2v(pgd.pgd) - __PAGE_OFFSET : 0;
 #else
 	return pgd.pgd;
 #endif
@@ -258,7 +258,7 @@ static inline pud_t native_make_pud(pmdval_t val)
 static inline pudval_t native_pud_val(pud_t pud)
 {
 #ifdef CONFIG_COOPERATIVE
-    return colinux_real_p2v(pud.pud) - __PAGE_OFFSET;
+    return pud.pud ? colinux_real_p2v(pud.pud) - __PAGE_OFFSET : 0;
 #else
 	return pud.pud;
 #endif
@@ -286,7 +286,7 @@ static inline pmd_t native_make_pmd(pmdval_t val)
 static inline pmdval_t native_pmd_val(pmd_t pmd)
 {
 #ifdef CONFIG_COOPERATIVE
-    return colinux_real_p2v(pmd.pmd) - __PAGE_OFFSET;
+    return pmd.pmd ? colinux_real_p2v(pmd.pmd) - __PAGE_OFFSET : 0;
 #else
 	return pmd.pmd;
 #endif
@@ -321,7 +321,7 @@ static inline pte_t native_make_pte(pteval_t val)
 static inline pteval_t native_pte_val(pte_t pte)
 {
 #ifdef CONFIG_COOPERATIVE
-    return colinux_real_p2v(pte.pte) - __PAGE_OFFSET;
+    return pte.pte ? colinux_real_p2v(pte.pte) - __PAGE_OFFSET : 0;
 #else
 	return pte.pte;
 #endif

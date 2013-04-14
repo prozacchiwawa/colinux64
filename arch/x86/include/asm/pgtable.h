@@ -328,9 +328,10 @@ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
     p.pte = (page_nr << PAGE_SHIFT) | massage_pgprot(pgprot) | _PAGE_REALPHYS;
     printk("pfn_pte - pte %lx prot %lx\n", p.pte, massage_pgprot(pgprot));
     return p;
-#endif
+#else
 	return __pte(((phys_addr_t)page_nr << PAGE_SHIFT) |
 		     massage_pgprot(pgprot));
+#endif
 }
 
 static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)

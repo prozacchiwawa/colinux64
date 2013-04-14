@@ -225,7 +225,7 @@ void __init x86_64_start_kernel(char * real_mode_data)
             colinux_real_v2p((unsigned long)level3_kernel_pgt) |
             _KERNPG_TABLE | _PAGE_REALPHYS;
 
-        native_set_pmd(&level2_fixmap_pgt[507], l1fp);
+        native_set_pmd(&level2_fixmap_pgt[506], l1fp);
         native_set_pud(&level3_kernel_pgt[510], l2kp);
         native_set_pud(&level3_kernel_pgt[511], l2fp);
         native_set_pgd(&init_level4_pgt[511], l3kp);
