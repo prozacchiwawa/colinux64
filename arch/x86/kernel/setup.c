@@ -1136,9 +1136,7 @@ void __init setup_arch(char **cmdline_p)
 	kvmclock_init();
 #endif
 
-#ifndef CONFIG_COOPERATIVE
 	x86_init.paging.pagetable_init();
-#endif
 
 	if (boot_cpu_data.cpuid_level >= 0) {
 		/* A CPU has %cr4 if and only if it has CPUID */
