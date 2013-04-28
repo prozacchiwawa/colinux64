@@ -1312,7 +1312,7 @@ config NEED_NODE_MEMMAP_SIZE
 
 config ARCH_FLATMEM_ENABLE
 	def_bool y
-	depends on X86_32 && !NUMA
+	depends on X86_32 && !NUMA || COOPERATIVE
 
 config ARCH_DISCONTIGMEM_ENABLE
 	def_bool y

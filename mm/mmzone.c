@@ -11,6 +11,8 @@
 
 struct pglist_data *first_online_pgdat(void)
 {
+    printk("first_online_pgdat?\n");
+    printk("contig_page_data %p\n", &contig_page_data);
 	return NODE_DATA(first_online_node);
 }
 

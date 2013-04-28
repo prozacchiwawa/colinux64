@@ -79,7 +79,9 @@ static inline unsigned long native_read_cr4_safe(void)
 
 static inline void native_write_cr4(unsigned long val)
 {
+#ifndef CONFIG_COOPERATIVE
 	asm volatile("mov %0,%%cr4": : "r" (val), "m" (__force_order));
+#endif
 }
 
 #ifdef CONFIG_X86_64

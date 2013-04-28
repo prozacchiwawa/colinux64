@@ -29,6 +29,12 @@
 # define MAX_PHYSADDR_BITS	44
 # define MAX_PHYSMEM_BITS	46
 #endif
-
 #endif /* CONFIG_SPARSEMEM */
+
+#ifdef CONFIG_COOPERATIVE
+# define SECTION_SIZE_BITS 48
+# define MAX_PHYSADDR_BITS 48
+# define MAX_PHYSMEM_BITS  48
+#endif
+
 #endif /* _ASM_X86_SPARSEMEM_H */

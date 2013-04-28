@@ -54,6 +54,45 @@ unsigned long colinux_real_v2p(unsigned long pte)
     return entry;
 }
 
+void colinux_prim_set_flags(void *address, unsigned long mask, unsigned long value)
+{
+    unsigned long pte = (unsigned long)address & ~(PAGE_SIZE - 1);
+    unsigned long flags;
+    unsigned long *map;
+    unsigned long cr3, pml3, pml2, pt, entry;
+    unsigned long pml4_e;
+    unsigned long pml3_e;
+    unsigned long pml2_e;
+    unsigned long pt_e, pt_map_e;
+	if (pte > __START_KERNEL_map)
+		pte -= __START_KERNEL_map;
+	if (pte < __PAGE_OFFSET)
+		pte += __PAGE_OFFSET;
+	
+    pml4_e = (pte >> (PAGE_SHIFT + (9 * 3))) & 0x1ff;
+    pml3_e = (pte >> (PAGE_SHIFT + (9 * 2))) & 0x1ff;
+    pml2_e = (pte >> (PAGE_SHIFT + 9)) & 0x1ff;
+    pt_e = (pte >> PAGE_SHIFT) & 0x1ff;
+    __asm__("mov %%cr3, %0" : "=r"(cr3));
+    map = (unsigned long *)colinux_real_p2v(cr3);
+    pml3 = map[pml4_e];
+    if (!(pml3 & _PAGE_PRESENT))
+        panic("pgd[%ld] is not present\n", pml4_e);
+    map = (unsigned long *)colinux_real_p2v(pml3 & ~(PAGE_SIZE - 1));
+    pml2 = map[pml3_e];
+    if (!(pml2 & _PAGE_PRESENT))
+        panic("pud[%ld] is not present\n", pml3_e);
+    map = (unsigned long *)colinux_real_p2v(pml2 & ~(PAGE_SIZE - 1));
+    pt = map[pml2_e];
+    if (!(pt & _PAGE_PRESENT))
+        panic("pmd[%ld] is not present\n", pml2_e);
+    map = (unsigned long *)colinux_real_p2v(pt & ~(PAGE_SIZE - 1));
+    entry = map[pt_e];
+    entry = entry & ~mask | (value & mask);
+    map[pt_e] = entry;
+    __asm__("invlpg (%0)\n" : : "r"(address));
+}
+
 unsigned long colinux_real_p2v(unsigned long pte)
 {
     int low = 0, high = page_revmap_size, mid = high / 2;

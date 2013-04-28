@@ -606,13 +606,8 @@ kernel_physical_mapping_init(unsigned long start,
 	unsigned long next, last_map_addr = end;
 	unsigned long addr;
 
-#ifndef CONFIG_COOPERATIVE
 	start = (unsigned long)__va(start);
 	end = (unsigned long)__va(end);
-#else
-	start = (unsigned long)__PAGE_OFFSET + start;
-	end = (unsigned long)__PAGE_OFFSET + end;
-#endif
 	addr = start;
 
 	for (; start < end; start = next) {
@@ -1095,7 +1090,7 @@ void __init mem_init(void)
 	/* Register memory areas for /proc/kcore */
 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_START,
 			 VSYSCALL_END - VSYSCALL_START, KCORE_OTHER);
-
+    
 	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
 			 "%ldk absent, %ldk reserved, %ldk data, %ldk init)\n",
 		nr_free_pages() << (PAGE_SHIFT-10),

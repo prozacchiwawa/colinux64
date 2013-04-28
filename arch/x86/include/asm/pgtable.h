@@ -322,7 +322,7 @@ static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
     if (page_nr > 1 * 1024 * 1024)
         panic("Page nr impossibly large %lx\n", page_nr);
     fake_p2v = colinux_fake_p2v(page_nr << PAGE_SHIFT);
-    printk("pfn_pte - page_nr %lx pgprot %lx fake_p2v %lx\n", page_nr, pgprot, fake_p2v);
+    printk("pfn_pte - page_nr %lx fake_p2v %lx\n", page_nr, fake_p2v);
     page_nr = colinux_real_v2p(fake_p2v) >> PAGE_SHIFT;
     printk("pfn_pte - fake_phys %lx real_phys %lx\n", orig, page_nr);
     p.pte = (page_nr << PAGE_SHIFT) | massage_pgprot(pgprot) | _PAGE_REALPHYS;
@@ -343,7 +343,7 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
     if (page_nr > 1 * 1024 * 1024)
         panic("Page nr impossibly large %lx\n", page_nr);
     fake_p2v = colinux_fake_p2v(page_nr << PAGE_SHIFT);
-    printk("pfn_pmd - page_nr %lx pgprot %lx fake_p2v %lx\n", page_nr, pgprot, fake_p2v);
+    printk("pfn_pmd - page_nr %lx fake_p2v %lx\n", page_nr, fake_p2v);
     page_nr = colinux_real_v2p(fake_p2v) >> PAGE_SHIFT;
     printk("pfn_pmd - fake_phys %lx real_phys %lx\n", orig, page_nr);
     p.pmd = (page_nr << PAGE_SHIFT) | massage_pgprot(pgprot) | _PAGE_REALPHYS;

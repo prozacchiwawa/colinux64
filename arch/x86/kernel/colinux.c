@@ -1,36 +1,66 @@
 #include <linux/fuse.h> // stdint types
+#include <linux/slab.h>
+#include <asm/pgtable.h>
 #include <linux/irqflags.h>
 #include <linux/cooperative.h>
+#include <linux/cooperative_internal.h>
 
-long co_passage_page_holding_count;
+int co_passage_page_holding_count;
+extern void colinux_prim_set_flags(void *address, unsigned long mask, unsigned long value);
 
-static inline void co_passage_page_ref_up(void)
+void co_passage_page_ref_up(void)
 {
 #ifdef ENABLE_PASSAGE_HOLDING_CHECK
   co_passage_page_holding_count++;
 #endif
 }
 
-static inline void co_passage_page_ref_down(void)
+void co_passage_page_ref_down(void)
 {
 #ifdef ENABLE_PASSAGE_HOLDING_CHECK
   co_passage_page_holding_count--;
 #endif
 }
 
-static inline void co_passage_page_acquire(unsigned long *flags)
+void co_passage_page_acquire(unsigned long *flags)
 {
-  local_irq_save(flags);
+  local_irq_save(*flags);
   co_passage_page_ref_up();
 }
 
-static inline void co_passage_page_release(unsigned long flags)
+void co_passage_page_release(unsigned long flags)
 {
   co_passage_page_ref_down();
   local_irq_restore(flags);
 }
 
-#define cpu_has_fxsr 1
+co_message_t *co_send_message_save(unsigned long *flags)
+{
+	//co_passage_page_assert_valid();
+
+    // unlock passage page
+    colinux_prim_set_flags(co_passage_page, _PAGE_RW, _PAGE_RW);
+
+	co_passage_page_acquire(flags);
+
+	if (co_io_buffer->messages_waiting) {
+		co_passage_page_release(*flags);
+		return NULL;
+	}
+
+	co_passage_page->operation = CO_OPERATION_MESSAGE_TO_MONITOR;
+	co_io_buffer->messages_waiting = 1;
+	return ((co_message_t *)co_io_buffer->buffer);
+}
+
+void co_send_message_restore(unsigned long flags)
+{
+	co_switch_wrapper();
+	co_passage_page_release(flags);
+    // lock passage page
+    colinux_prim_set_flags(co_passage_page, _PAGE_RW, 0);
+}
+
 int co_host_fpu_saved;
 char co_host_fpu[0x200];
 
@@ -96,16 +126,16 @@ void co_switch_wrapper(void)
 
 void co_terminate_panic(const char *text, int len)
 {
-  char *target = (char*)&co_passage_page->params[4], *end = target + len + 1;
-  unsigned long flags;
+    unsigned long flags;
+    co_message_t *msg = co_send_message_save(&flags);
+    char *target = (char*)&co_passage_page->params[4], *end = target + len + 1;
 
-  co_passage_page_acquire(&flags);
-  co_passage_page->operation = CO_OPERATION_TERMINATE;
-  co_passage_page->params[0] = CO_TERMINATE_PANIC;
-  co_passage_page->params[1] = 0;
-  co_passage_page->params[2] = 0;
-  co_passage_page->params[3] = len;
-  while (target < end) *target++ = *text++;
-  co_switch_wrapper();
-  while(1);
+    co_passage_page->operation = CO_OPERATION_TERMINATE;
+    co_passage_page->params[0] = CO_TERMINATE_PANIC;
+    co_passage_page->params[1] = 0;
+    co_passage_page->params[2] = 0;
+    co_passage_page->params[3] = len;
+    while (target < end) *target++ = *text++;
+    co_send_message_restore(flags);
+    while (1);
 }

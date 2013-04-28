@@ -126,14 +126,26 @@ unsigned long __init free_low_memory_core_early(int nodeid)
 	phys_addr_t start, end, size;
 	u64 i;
 
+    printk("free_low_memory_core_early nodeid %d\n", nodeid);
 	for_each_free_mem_range(i, MAX_NUMNODES, &start, &end, NULL)
+    {
+        printk("__free_memory_core(%lx, %lx)\n", start, end);
 		count += __free_memory_core(start, end);
+        printk("__free %lx\n", count);
+    }
 
 	/* free range that is used for reserved array if we allocate it */
+    printk("get_allocated_memblock_reserved_regions_info %lx\n", start);
 	size = get_allocated_memblock_reserved_regions_info(&start);
+    printk("size = g.a.m.r.r.i %lx\n", size);
 	if (size)
+    {
+        printk("__free_memory_core(%lx, %lx)\n", start, start + size);
 		count += __free_memory_core(start, start + size);
+        printk("__free_memory_core %lx\n", count);
+    }
 
+    printk("end count %lx\n", count);
 	return count;
 }
 
@@ -148,9 +160,16 @@ static void reset_node_lowmem_managed_pages(pg_data_t *pgdat)
 	 * highmem pages will be managed by the buddy system. Here highmem
 	 * zone also includes highmem movable zone.
 	 */
+    printk("pgdat %p\n", pgdat);
 	for (z = pgdat->node_zones; z < pgdat->node_zones + MAX_NR_ZONES; z++)
+    {
+        printk("node_zone %p\n", z);
 		if (!is_highmem(z))
+        {
+            printk("not highmem %p\n", z);
 			z->managed_pages = 0;
+        }
+    }
 }
 
 /**
@@ -162,15 +181,24 @@ unsigned long __init free_all_bootmem(void)
 {
 	struct pglist_data *pgdat;
 
+    printk("for each online pgdat %s:%d\n", __FILE__, __LINE__);
+    pgdat = first_online_pgdat();
+    printk("first pgdat %p\n", pgdat);
 	for_each_online_pgdat(pgdat)
+    {
+        printk("reset_node_lowmem_managed_pages %p\n", pgdat);
 		reset_node_lowmem_managed_pages(pgdat);
+        printk("reset_node_lowmem_managed_pages done\n");
+    }
 
 	/*
 	 * We need to use MAX_NUMNODES instead of NODE_DATA(0)->node_id
 	 *  because in some case like Node0 doesn't have RAM installed
 	 *  low ram will be on Node1
 	 */
+    printk("free_low_memory_core_early(%d)\n", MAX_NUMNODES);
 	return free_low_memory_core_early(MAX_NUMNODES);
+    printk("free_low_memory_core_early done\n");
 }
 
 /**
