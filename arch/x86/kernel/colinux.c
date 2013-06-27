@@ -99,9 +99,9 @@ static void co_switch_wrapper_protected(void)
   // Assume registers we modify in there and in our argument passing
   // convention are non-volatile.  I'll optimize later.
   __asm__("pushq %%rbx\n"
-		  "mov %0, %%rcx\n"
-		  "mov %1, %%rdx\n"
-		  "mov %2, %%r8\n"
+          "mov %0, %%rcx\n"
+		  "mov %1, %%rsi\n"
+		  "mov %2, %%rdi\n"
 		  "callq *%%rcx\n"
 		  "popq %%rbx\n"
 		  : 
