@@ -6,7 +6,6 @@
 #include <linux/cooperative_internal.h>
 
 int co_passage_page_holding_count;
-extern void colinux_prim_set_flags(void *address, unsigned long mask, unsigned long value);
 
 void co_passage_page_ref_up(void)
 {
@@ -39,7 +38,7 @@ co_message_t *co_send_message_save(unsigned long *flags)
 	//co_passage_page_assert_valid();
 
     // unlock passage page
-    colinux_prim_set_flags(co_passage_page, _PAGE_RW, _PAGE_RW);
+    //colinux_prim_set_flags(co_passage_page, _PAGE_RW, _PAGE_RW);
 
 	co_passage_page_acquire(flags);
 
@@ -58,7 +57,7 @@ void co_send_message_restore(unsigned long flags)
 	co_switch_wrapper();
 	co_passage_page_release(flags);
     // lock passage page
-    colinux_prim_set_flags(co_passage_page, _PAGE_RW, 0);
+    //colinux_prim_set_flags(co_passage_page, _PAGE_RW, 0);
 }
 
 int co_host_fpu_saved;
